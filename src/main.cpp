@@ -205,28 +205,28 @@ int main() {
         // don't forget to enable shader before setting uniforms
         ourShader.use();
         pointLight.position = glm::vec3(4.0 * cos(currentFrame), 4.0f, 4.0 * sin(currentFrame));
-        ourShader.setVec3("pointLight.position", pointLight.position);
-        ourShader.setVec3("pointLight.ambient", pointLight.ambient);
-        ourShader.setVec3("pointLight.diffuse", pointLight.diffuse);
-        ourShader.setVec3("pointLight.specular", pointLight.specular);
-        ourShader.setFloat("pointLight.constant", pointLight.constant);
-        ourShader.setFloat("pointLight.linear", pointLight.linear);
-        ourShader.setFloat("pointLight.quadratic", pointLight.quadratic);
-        ourShader.setVec3("viewPosition", programState->camera.Position);
-        ourShader.setFloat("material.shininess", 32.0f);
+        ourShader.uniform("pointLight.position", pointLight.position);
+        ourShader.uniform("pointLight.ambient", pointLight.ambient);
+        ourShader.uniform("pointLight.diffuse", pointLight.diffuse);
+        ourShader.uniform("pointLight.specular", pointLight.specular);
+        ourShader.uniform("pointLight.constant", pointLight.constant);
+        ourShader.uniform("pointLight.linear", pointLight.linear);
+        ourShader.uniform("pointLight.quadratic", pointLight.quadratic);
+        ourShader.uniform("viewPosition", programState->camera.Position);
+        ourShader.uniform("material.shininess", 32.0f);
         // view/projection transformations
         glm::mat4 projection = glm::perspective(glm::radians(programState->camera.Zoom),
                                                 (float) SCR_WIDTH / (float) SCR_HEIGHT, 0.1f, 100.0f);
         glm::mat4 view = programState->camera.GetViewMatrix();
-        ourShader.setMat4("projection", projection);
-        ourShader.setMat4("view", view);
+        ourShader.uniform("projection", projection);
+        ourShader.uniform("view", view);
 
         // render the loaded model
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model,
                                programState->backpackPosition); // translate it down so it's at the center of the scene
         model = glm::scale(model, glm::vec3(programState->backpackScale));    // it's a bit too big for our scene, so scale it down
-        ourShader.setMat4("model", model);
+        ourShader.uniform("model", model);
         ourModel.Draw(ourShader);
 
         if (programState->ImGuiEnabled)
