@@ -24,14 +24,14 @@ public:
         glAttachShader(ID, vertex);
         glAttachShader(ID, fragment);
         glLinkProgram(ID);
-        checkCompileErrors(ID, "PROGRAM");
+        checkLinkingErrors(ID);
 
         glDeleteShader(vertex);
         glDeleteShader(fragment);
     }
     // activate the shader
     // ------------------------------------------------------------------------
-    void use() 
+    void use()
     { 
         glUseProgram(ID); 
     }
@@ -96,7 +96,7 @@ public:
 
 private:
 
-    GLuint loadShader(const char *path, GLenum type) {
+    static GLuint loadShader(const char *path, GLenum type) {
         std::string code;
         try {
             std::ifstream file;
@@ -117,35 +117,39 @@ private:
         auto shader = glCreateShader(type);
         glShaderSource(shader, 1, &ccode, nullptr);
         glCompileShader(shader);
-        // TODO: refactor checkCompileErrors to accept GLenum
-        checkCompileErrors(shader, "VERTEX");
+        checkCompileErrors(shader, type);
 
         return shader;
     }
 
-    // utility function for checking shader compilation/linking errors.
+    // utility function for checking shader compilation errors.
     // ------------------------------------------------------------------------
-    void checkCompileErrors(GLuint shader, std::string type)
-    {
+    static void checkCompileErrors(GLuint shader, GLenum type) {
         GLint success;
         GLchar infoLog[1024];
-        if(type != "PROGRAM")
+        glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+        if(!success)
         {
-            glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-            if(!success)
-            {
-                glGetShaderInfoLog(shader, 1024, NULL, infoLog);
-                std::cout << "ERROR::SHADER_COMPILATION_ERROR of type: " << type << "\n" << infoLog << "\n -- --------------------------------------------------- -- " << std::endl;
-            }
+            glGetShaderInfoLog(shader, 1024, nullptr, infoLog);
+            std::cout << "ERROR::SHADER_COMPILATION_ERROR::"
+                << (type == GL_VERTEX_SHADER ? "VERTEX_SHADER" : "FRAGMENT_SHADER") << "\n"
+                << infoLog << "\n -- --------------------------------------------------- -- "
+                << std::endl;
         }
-        else
+    }
+
+    // utility function for checking shader linking errors.
+    // ------------------------------------------------------------------------
+    static void checkLinkingErrors(GLuint program) {
+        GLint success;
+        GLchar infoLog[1024];
+        glGetProgramiv(program, GL_LINK_STATUS, &success);
+        if(!success)
         {
-            glGetProgramiv(shader, GL_LINK_STATUS, &success);
-            if(!success)
-            {
-                glGetProgramInfoLog(shader, 1024, NULL, infoLog);
-                std::cout << "ERROR::PROGRAM_LINKING_ERROR of type: " << type << "\n" << infoLog << "\n -- --------------------------------------------------- -- " << std::endl;
-            }
+            glGetShaderInfoLog(program, 1024, nullptr, infoLog);
+            std::cout << "ERROR::PROGRAM_LINKING_ERROR\n"
+                << infoLog << "\n -- --------------------------------------------------- -- "
+                << std::endl;
         }
     }
 };
