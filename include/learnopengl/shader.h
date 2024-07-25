@@ -8,10 +8,12 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <unordered_map>
 #include <common.h>
 class Shader
 {
 public:
+    // TODO: move to private section, has dependency in Mesh
     unsigned int ID;
     // constructor generates the shader on the fly
     // ------------------------------------------------------------------------
@@ -31,70 +33,89 @@ public:
     }
     // activate the shader
     // ------------------------------------------------------------------------
-    void use()
+    void use() const
     { 
-        glUseProgram(ID); 
+        glUseProgram(ID);
     }
     // utility uniform functions
     // ------------------------------------------------------------------------
-    void uniform(const std::string &name, bool value) const
-    {         
-        glUniform1i(glGetUniformLocation(ID, name.c_str()), (int)value); 
+    void uniform(const std::string &name, bool value)
+    {
+        use();
+        glUniform1i(location(name), (int)value);
     }
     // ------------------------------------------------------------------------
-    void uniform(const std::string &name, int value) const
-    { 
-        glUniform1i(glGetUniformLocation(ID, name.c_str()), value); 
+    void uniform(const std::string &name, int value)
+    {
+        use();
+        glUniform1i(location(name), value);
     }
     // ------------------------------------------------------------------------
-    void uniform(const std::string &name, float value) const
-    { 
-        glUniform1f(glGetUniformLocation(ID, name.c_str()), value); 
+    void uniform(const std::string &name, float value)
+    {
+        use();
+        glUniform1f(location(name), value);
     }
     // ------------------------------------------------------------------------
-    void uniform(const std::string &name, const glm::vec2 &value) const
-    { 
-        glUniform2fv(glGetUniformLocation(ID, name.c_str()), 1, &value[0]); 
+    void uniform(const std::string &name, const glm::vec2 &value)
+    {
+        use();
+        glUniform2fv(location(name), 1, &value[0]);
     }
-    void uniform(const std::string &name, float x, float y) const
-    { 
-        glUniform2f(glGetUniformLocation(ID, name.c_str()), x, y); 
-    }
-    // ------------------------------------------------------------------------
-    void uniform(const std::string &name, const glm::vec3 &value) const
-    { 
-        glUniform3fv(glGetUniformLocation(ID, name.c_str()), 1, &value[0]); 
-    }
-    void uniform(const std::string &name, float x, float y, float z) const
-    { 
-        glUniform3f(glGetUniformLocation(ID, name.c_str()), x, y, z); 
+    void uniform(const std::string &name, float x, float y)
+    {
+        use();
+        glUniform2f(location(name), x, y);
     }
     // ------------------------------------------------------------------------
-    void uniform(const std::string &name, const glm::vec4 &value) const
+    void uniform(const std::string &name, const glm::vec3 &value)
     { 
-        glUniform4fv(glGetUniformLocation(ID, name.c_str()), 1, &value[0]); 
+        glUniform3fv(location(name), 1, &value[0]);
+    }
+    void uniform(const std::string &name, float x, float y, float z)
+    {
+        use();
+        glUniform3f(location(name), x, y, z);
+    }
+    // ------------------------------------------------------------------------
+    void uniform(const std::string &name, const glm::vec4 &value)
+    {
+        use();
+        glUniform4fv(location(name), 1, &value[0]);
     }
     void uniform(const std::string &name, float x, float y, float z, float w)
-    { 
-        glUniform4f(glGetUniformLocation(ID, name.c_str()), x, y, z, w); 
+    {
+        use();
+        glUniform4f(location(name), x, y, z, w);
     }
     // ------------------------------------------------------------------------
-    void uniform(const std::string &name, const glm::mat2 &mat) const
+    void uniform(const std::string &name, const glm::mat2 &mat)
     {
-        glUniformMatrix2fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, &mat[0][0]);
+        use();
+        glUniformMatrix2fv(location(name), 1, GL_FALSE, &mat[0][0]);
     }
     // ------------------------------------------------------------------------
-    void uniform(const std::string &name, const glm::mat3 &mat) const
+    void uniform(const std::string &name, const glm::mat3 &mat)
     {
-        glUniformMatrix3fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, &mat[0][0]);
+        use();
+        glUniformMatrix3fv(location(name), 1, GL_FALSE, &mat[0][0]);
     }
     // ------------------------------------------------------------------------
-    void uniform(const std::string &name, const glm::mat4 &mat) const
+    void uniform(const std::string &name, const glm::mat4 &mat)
     {
-        glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, &mat[0][0]);
+        use();
+        glUniformMatrix4fv(location(name), 1, GL_FALSE, &mat[0][0]);
     }
 
 private:
+
+    GLint location(const std::string &name) {
+        const auto iloc = m_location.find(name);
+        if (iloc == m_location.end()) {
+            return m_location[name] = glGetUniformLocation(ID, name.c_str());
+        }
+        return iloc->second;
+    }
 
     static GLuint loadShader(const char *path, GLenum type) {
         std::string code;
@@ -152,5 +173,7 @@ private:
                 << std::endl;
         }
     }
+
+    std::unordered_map<std::string, GLint> m_location;
 };
 #endif
