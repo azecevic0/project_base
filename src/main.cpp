@@ -97,6 +97,11 @@ void ProgramState::LoadFromFile(std::string filename) {
     }
 }
 
+struct Screen {
+    unsigned width {SCR_WIDTH};
+    unsigned height {SCR_HEIGHT};
+} screen;
+
 ProgramState *programState;
 
 void DrawImGui(ProgramState *programState);
@@ -115,7 +120,7 @@ int main() {
 
     // glfw window creation
     // --------------------
-    GLFWwindow *window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
+    GLFWwindow *window = glfwCreateWindow(screen.width, screen.height, "LearnOpenGL", NULL, NULL);
     if (window == NULL) {
         std::cout << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
@@ -216,7 +221,8 @@ int main() {
         ourShader.uniform("material.shininess", 32.0f);
         // view/projection transformations
         glm::mat4 projection = glm::perspective(glm::radians(programState->camera.Zoom),
-                                                (float) SCR_WIDTH / (float) SCR_HEIGHT, 0.1f, 100.0f);
+                                                static_cast<float>(screen.width) / static_cast<float>(screen.height),
+                                                0.1f, 100.0f);
         glm::mat4 view = programState->camera.GetViewMatrix();
         ourShader.uniform("projection", projection);
         ourShader.uniform("view", view);
@@ -272,6 +278,8 @@ void processInput(GLFWwindow *window) {
 void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
     // make sure the viewport matches the new window dimensions; note that width and
     // height will be significantly larger than specified on retina displays.
+    screen.width = width;
+    screen.height = height;
     glViewport(0, 0, width, height);
 }
 
