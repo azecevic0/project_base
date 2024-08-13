@@ -6,6 +6,11 @@
 class AbstractTexture {
 
 public:
+    explicit AbstractTexture(const GLuint target) : m_target{target} {
+        glGenTextures(1, &m_texture);
+        glBindTexture(m_target, m_texture);
+    }
+
     void set(GLenum param, GLint value) {
         bind();
         glTexParameteri(m_target, param, value);
@@ -21,11 +26,6 @@ public:
     }
 
 protected:
-    explicit AbstractTexture(const GLuint target) : m_target{target} {
-        glGenTextures(1, &m_texture);
-        glBindTexture(m_target, m_texture);
-    }
-
     GLuint m_texture {};
     GLuint m_target {};
 };

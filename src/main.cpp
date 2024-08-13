@@ -14,6 +14,8 @@
 #include <learnopengl/camera.h>
 #include <learnopengl/model.h>
 
+#include <learnopengl/cubemap.h>
+
 #include <iostream>
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
@@ -167,6 +169,7 @@ int main() {
     // build and compile shaders
     // -------------------------
     Shader ourShader("resources/shaders/2.model_lighting.vs", "resources/shaders/2.model_lighting.fs");
+    Shader skyboxShader("resources/shaders/skybox.vs", "resources/shaders/skybox.fs");
 
     // load models
     // -----------
@@ -183,7 +186,17 @@ int main() {
     pointLight.linear = 0.09f;
     pointLight.quadratic = 0.032f;
 
-
+    CubeMap skybox {
+        skyboxShader,
+        {
+            "resources/textures/skybox/px.png",
+            "resources/textures/skybox/nx.png",
+            "resources/textures/skybox/py.png",
+            "resources/textures/skybox/ny.png",
+            "resources/textures/skybox/pz.png",
+            "resources/textures/skybox/nz.png"
+        }
+    };
 
     // draw in wireframe
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -234,6 +247,8 @@ int main() {
         model = glm::scale(model, glm::vec3(programState->backpackScale));    // it's a bit too big for our scene, so scale it down
         ourShader.uniform("model", model);
         ourModel.Draw(ourShader);
+
+        skybox.draw(view, projection);
 
         if (programState->ImGuiEnabled)
             DrawImGui(programState);

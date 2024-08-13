@@ -46,7 +46,8 @@ add_executable(${PROJECT_NAME}
         ${SOURCES}
         include/learnopengl/image.h
         include/learnopengl/texture2d.h
-        include/learnopengl/texture.h)
+        include/learnopengl/texture.h
+        include/learnopengl/cubemap.h)
 
 target_link_libraries(${PROJECT_NAME} ${LIBS})
 
