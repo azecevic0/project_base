@@ -173,12 +173,18 @@ int main() {
 
     // load models
     // -----------
-    Model ourModel("resources/objects/backpack/backpack.obj");
-    ourModel.SetShaderTextureNamePrefix("material.");
+    Model terrain("resources/objects/grass/grass.obj");
+    terrain.SetShaderTextureNamePrefix("material.");
+
+    stbi_set_flip_vertically_on_load(false);
+    Model barn("resources/objects/barn/barn.obj");
+    barn.SetShaderTextureNamePrefix("material.");
+    stbi_set_flip_vertically_on_load(true);
 
     PointLight& pointLight = programState->pointLight;
     pointLight.position = glm::vec3(4.0f, 4.0, 0.0);
-    pointLight.ambient = glm::vec3(0.1, 0.1, 0.1);
+    /// TODO: revert to (0.1, 0.1, 0.1)
+    pointLight.ambient = glm::vec3(1.0, 1.0, 1.0);
     pointLight.diffuse = glm::vec3(0.6, 0.6, 0.6);
     pointLight.specular = glm::vec3(1.0, 1.0, 1.0);
 
@@ -222,7 +228,7 @@ int main() {
 
         // don't forget to enable shader before setting uniforms
         ourShader.use();
-        pointLight.position = glm::vec3(4.0 * cos(currentFrame), 4.0f, 4.0 * sin(currentFrame));
+        // pointLight.position = glm::vec3(4.0 * cos(currentFrame), 4.0f, 4.0 * sin(currentFrame));
         ourShader.uniform("pointLight.position", pointLight.position);
         ourShader.uniform("pointLight.ambient", pointLight.ambient);
         ourShader.uniform("pointLight.diffuse", pointLight.diffuse);
@@ -241,12 +247,23 @@ int main() {
         ourShader.uniform("view", view);
 
         // render the loaded model
+        // glm::mat4 model = glm::mat4(1.0f);
+        // model = glm::translate(model,
+        //                        programState->backpackPosition); // translate it down so it's at the center of the scene
+        // model = glm::scale(model, glm::vec3(programState->backpackScale));    // it's a bit too big for our scene, so scale it down
+        // ourShader.uniform("model", model);
+        // ourModel.Draw(ourShader);
+
         glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model,
-                               programState->backpackPosition); // translate it down so it's at the center of the scene
-        model = glm::scale(model, glm::vec3(programState->backpackScale));    // it's a bit too big for our scene, so scale it down
         ourShader.uniform("model", model);
-        ourModel.Draw(ourShader);
+
+        terrain.Draw(ourShader);
+
+
+        model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.9f, -20.0f));
+        model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0, 1, 0));
+        ourShader.uniform("model", model);
+        barn.Draw(ourShader);
 
         skybox.draw(view, projection);
 
