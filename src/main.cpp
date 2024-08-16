@@ -187,7 +187,7 @@ int main() {
     PointLight& pointLight = programState->pointLight;
     // pointLight.position = glm::vec3(4.0f, 4.0, 0.0);
     // position of lantern
-    pointLight.position = glm::vec3(4.0f, 6.65f, -13.0f);
+    pointLight.position = glm::vec3(4.0f, 6.65f, -33.0f);
     /// TODO: revert to (0.1, 0.1, 0.1)
     pointLight.ambient = glm::vec3(1.0, 1.0, 1.0);
     pointLight.diffuse = glm::vec3(0.6, 0.6, 0.6);
@@ -266,12 +266,12 @@ int main() {
         ourShader.uniform("model", model);
         terrain.Draw(ourShader);
 
-        model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.9f, -20.0f));
+        model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.9f, -40.0f));
         model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0, 1, 0));
         ourShader.uniform("model", model);
         barn.Draw(ourShader);
 
-        model = glm::translate(glm::mat4(1.0f), glm::vec3(4.0f, 6.65f, -13.0f));
+        model = glm::translate(glm::mat4(1.0f), glm::vec3(4.0f, 6.65f, -33.0f));
         model = glm::scale(model, glm::vec3(0.3f));
         ourShader.uniform("model", model);
         lantern.Draw(ourShader);
