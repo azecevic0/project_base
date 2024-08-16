@@ -17,10 +17,12 @@ public:
         : m_texture{GL_TEXTURE_CUBE_MAP},
           m_shader{shader}
     {
+        stbi_set_flip_vertically_on_load(false);
         for (auto i {0u}; i < faces.size(); ++i) {
             const Image face {faces[i].c_str()};
             if (!face.data) {
                 std::cerr << "CubeMap::Failed to load at path: " << faces[i].c_str() << std::endl;
+                stbi_set_flip_vertically_on_load(true);
                 return;
             }
             glTexImage2D(
@@ -35,6 +37,7 @@ public:
                 face.data
             );
         }
+        stbi_set_flip_vertically_on_load(true);
 
         m_texture.set(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         m_texture.set(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
