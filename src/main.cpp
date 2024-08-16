@@ -212,6 +212,9 @@ int main() {
     // draw in wireframe
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
+    // fixed height for FPS camera
+    programState->camera.Position.y = 5.5f;
+
     // render loop
     // -----------
     while (!glfwWindowShouldClose(window)) {
