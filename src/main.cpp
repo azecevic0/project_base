@@ -182,6 +182,9 @@ int main() {
 
     Model lantern("resources/objects/lantern/lantern.obj");
     lantern.SetShaderTextureNamePrefix("material.");
+
+    Model pine("resources/objects/pine/pine.obj");
+    pine.SetShaderTextureNamePrefix("material.");
     stbi_set_flip_vertically_on_load(true);
 
     PointLight& pointLight = programState->pointLight;
@@ -197,6 +200,9 @@ int main() {
     pointLight.linear = 0.09f;
     pointLight.quadratic = 0.032f;
 
+    // fixed height for FPS camera
+    programState->camera.Position.y = 5.5f;
+
     CubeMap skybox {
         skyboxShader,
         {
@@ -209,11 +215,77 @@ int main() {
         }
     };
 
+    /// TODO: refactor
+    std::vector<glm::vec3> pinePositions = {
+        {-35.8, 1.5, -9.3},
+        {-36.6, 1.5, -56.6},
+        {37.0, 1.5, 52.2},
+        {26.5, 1.5, -22.8},
+        {18.1, 1.5, -0.6},
+        {-39.4, 1.5, 27.3},
+        {27.1, 1.5, -50.1},
+        {30.0, 1.5, 48.9},
+        {-27.6, 1.5, 60.3},
+        {23.9, 1.5, 65.1},
+        {-9.9, 1.5, -10.2},
+        {9.7, 1.5, 48.3},
+        {-11.9, 1.5, 47.8},
+        {-19.1, 1.5, -48.0},
+        {-24.1, 1.5, -26.8},
+        {18.7, 1.5, -24.7},
+        {-30.9, 1.5, -42.4},
+        {-19.2, 1.5, 0.2},
+        {28.8, 1.5, -30.8},
+        {35.8, 1.5, 41.3},
+        {15.3, 1.5, -66.8},
+        {22.0, 1.5, 10.8},
+        {13.1, 1.5, 68.5},
+        {15.2, 1.5, 9.0},
+        {-20.3, 1.5, -9.7},
+        {36.6, 1.5, 6.1},
+        {22.1, 1.5, -40.4},
+        {15.9, 1.5, 23.9},
+        {-30.2, 1.5, -5.8},
+        {24.0, 1.5, -11.0},
+        {-30.1, 1.5, 14.2},
+        {-12.4, 1.5, 12.9},
+        {39.0, 1.5, -32.4},
+        {-21.9, 1.5, -56.6},
+        {-32.7, 1.5, 20.0},
+        {37.8, 1.5, 32.5},
+        {37.6, 1.5, -7.9},
+        {11.8, 1.5, 31.4},
+        {10.1, 1.5, -6.5},
+        {-18.8, 1.5, -67.9},
+        {21.4, 1.5, -63.1},
+        {-36.1, 1.5, 45.1},
+        {-27.7, 1.5, 24.1},
+        {27.4, 1.5, 33.6},
+        {-35.9, 1.5, -48.4},
+        {-23.6, 1.5, 15.1},
+        {-27.2, 1.5, -49.8},
+        {-29.4, 1.5, 51.5},
+        {-39.0, 1.5, -41.6},
+        {33.2, 1.5, -62.6},
+    };
+
+    std::vector<float> pineScales {
+        2.7f, 3.4f, 5.5f, 5.7f, 2.6f, 2.6f, 3.6f, 5.9f, 3.9f, 3.2f,
+        4.3f, 5.8f, 3.9f, 4.7f, 3.4f, 4.5f, 2.4f, 2.8f, 2.6f, 1.3f,
+        3.1f, 4.6f, 1.7f, 2.6f, 1.9f, 5.5f, 5.0f, 1.9f, 4.8f, 1.5f,
+        2.2f, 3.6f, 4.7f, 2.0f, 1.7f, 3.9f, 2.5f, 2.7f, 3.8f, 3.3f,
+        3.8f, 3.8f, 1.2f, 5.0f, 3.5f, 2.9f, 1.3f, 5.6f, 5.3f, 5.9f
+    };
+
+    std::vector<glm::mat4> pineModels;
+    for (auto i = 0u; i < pinePositions.size(); ++i) {
+        glm::mat4 model = glm::translate(glm::mat4(1.0f), pinePositions[i]);
+        model = glm::scale(model, glm::vec3(pineScales[i]));
+        pineModels.push_back(model);
+    }
+
     // draw in wireframe
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-    // fixed height for FPS camera
-    programState->camera.Position.y = 5.5f;
 
     // render loop
     // -----------
@@ -275,6 +347,11 @@ int main() {
         model = glm::scale(model, glm::vec3(0.3f));
         ourShader.uniform("model", model);
         lantern.Draw(ourShader);
+
+        for (const auto &modelMatrix : pineModels) {
+            ourShader.uniform("model", modelMatrix);
+            pine.Draw(ourShader);
+        }
 
         skybox.draw(view, projection);
 
