@@ -15,8 +15,10 @@
 #include <learnopengl/model.h>
 
 #include <learnopengl/cubemap.h>
+#include <learnopengl/vampire.h>
 
 #include <iostream>
+#include <memory>
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 
@@ -27,6 +29,8 @@ void scroll_callback(GLFWwindow *window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
 
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods);
+
+void mouse_button_callback(GLFWwindow *window, int button, int action, int mods);
 
 // settings
 const unsigned int SCR_WIDTH = 800;
@@ -105,6 +109,7 @@ struct Screen {
 } screen;
 
 ProgramState *programState;
+std::unique_ptr<Vampire> vampire;
 
 void DrawImGui(ProgramState *programState);
 
@@ -133,6 +138,7 @@ int main() {
     glfwSetCursorPosCallback(window, mouse_callback);
     glfwSetScrollCallback(window, scroll_callback);
     glfwSetKeyCallback(window, key_callback);
+    glfwSetMouseButtonCallback(window, mouse_button_callback);
     // tell GLFW to capture our mouse
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
@@ -185,6 +191,8 @@ int main() {
 
     Model pine("resources/objects/pine/pine.obj");
     pine.SetShaderTextureNamePrefix("material.");
+
+    vampire = std::make_unique<Vampire>();
     stbi_set_flip_vertically_on_load(true);
 
     PointLight& pointLight = programState->pointLight;
@@ -353,6 +361,8 @@ int main() {
             pine.Draw(ourShader);
         }
 
+        vampire->draw(ourShader, currentFrame, deltaTime);
+
         skybox.draw(view, projection);
 
         if (programState->ImGuiEnabled)
@@ -446,6 +456,7 @@ void DrawImGui(ProgramState *programState) {
         ImGui::DragFloat("pointLight.constant", &programState->pointLight.constant, 0.05, 0.0, 1.0);
         ImGui::DragFloat("pointLight.linear", &programState->pointLight.linear, 0.05, 0.0, 1.0);
         ImGui::DragFloat("pointLight.quadratic", &programState->pointLight.quadratic, 0.05, 0.0, 1.0);
+
         ImGui::End();
     }
 
@@ -472,5 +483,11 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
         } else {
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         }
+    }
+}
+
+void mouse_button_callback(GLFWwindow *window, int button, int action, int mods) {
+    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
+        vampire->attack(programState->camera.Position, programState->camera.Front, glfwGetTime());
     }
 }
