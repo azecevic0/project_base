@@ -11,18 +11,25 @@ public:
     int width;
     int height;
     int channels;
-    GLint format;
+    GLint internalFormat;
+    GLint dataFormat;
     stbi_uc *data {nullptr};
 
     explicit Image(const char *path) {
         data = stbi_load(path, &width, &height, &channels, 0);
         if (data) {
             switch (channels) {
+                case 1:
+                    internalFormat = GL_RED;
+                    dataFormat = GL_RED;
+                    break;
                 case 3:
-                    format = GL_RGB;
+                    internalFormat = GL_SRGB;
+                    dataFormat = GL_RGB;
                 break;
                 case 4:
-                    format = GL_RGBA;
+                    internalFormat = GL_SRGB_ALPHA;
+                    dataFormat = GL_RGBA;
                 break;
                 default:
                     std::cerr << "Image::" << path << "::Unknwon number of channels: " << channels << std::endl;

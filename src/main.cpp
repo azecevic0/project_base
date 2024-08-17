@@ -204,24 +204,24 @@ int main() {
 
     // load models
     // -----------
-    Model terrain("resources/objects/grass/grass.obj");
+    Model terrain("resources/objects/grass/grass.obj", true);
     terrain.SetShaderTextureNamePrefix("material.");
 
     // models with already flipped textures
     stbi_set_flip_vertically_on_load(false);
-    Model barn("resources/objects/barn/barn.obj");
+    Model barn("resources/objects/barn/barn.obj", true);
     barn.SetShaderTextureNamePrefix("material.");
 
-    Model lantern("resources/objects/lantern/lantern.obj");
+    Model lantern("resources/objects/lantern/lantern.obj", true);
     lantern.SetShaderTextureNamePrefix("material.");
 
-    Model pine("resources/objects/pine/pine.obj");
+    Model pine("resources/objects/pine/pine.obj", true);
     pine.SetShaderTextureNamePrefix("material.");
 
     vampire = std::make_unique<Vampire>();
     stbi_set_flip_vertically_on_load(true);
 
-    Model moon("resources/objects/moon/Moon.obj");
+    Model moon("resources/objects/moon/Moon.obj", true);
     lantern.SetShaderTextureNamePrefix("material.");
 
     PointLight& pointLight = programState->pointLight;
@@ -265,7 +265,8 @@ int main() {
             "resources/textures/skybox/ny.png",
             "resources/textures/skybox/pz.png",
             "resources/textures/skybox/nz.png"
-        }
+        },
+        true
     };
 
     /// TODO: refactor

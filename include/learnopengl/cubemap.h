@@ -13,7 +13,7 @@
 class CubeMap {
 
 public:
-    explicit CubeMap(Shader &shader, const std::vector<std::string> &faces)
+    explicit CubeMap(Shader &shader, const std::vector<std::string> &faces, const bool gammaCorrection = false)
         : m_texture{GL_TEXTURE_CUBE_MAP},
           m_shader{shader}
     {
@@ -28,11 +28,11 @@ public:
             glTexImage2D(
                 GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
                 0,
-                face.format,
+                gammaCorrection ? face.internalFormat : face.dataFormat,
                 face.width,
                 face.height,
                 0,
-                face.format,
+                face.dataFormat,
                 GL_UNSIGNED_BYTE,
                 face.data
             );

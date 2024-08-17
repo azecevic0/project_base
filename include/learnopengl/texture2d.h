@@ -11,17 +11,17 @@
 class Texture2D : public AbstractTexture {
 
 public:
-    explicit Texture2D(const char *path) : AbstractTexture{GL_TEXTURE_2D} {
+    explicit Texture2D(const char *path, const bool gammaCorrection = false) : AbstractTexture{GL_TEXTURE_2D} {
         const Image image {path};
         if (image.data) {
             glTexImage2D(
                 m_target,
                 0,
-                image.format,
+                gammaCorrection ? image.internalFormat : image.dataFormat,
                 image.width,
                 image.height,
                 0,
-                image.format,
+                image.dataFormat,
                 GL_UNSIGNED_BYTE,
                 image.data
             );
