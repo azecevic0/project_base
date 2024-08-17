@@ -57,6 +57,13 @@ struct PointLight {
     float quadratic;
 };
 
+struct DirLight {
+    glm::vec3 direction;
+    glm::vec3 ambient;
+    glm::vec3 diffuse;
+    glm::vec3 specular;
+};
+
 struct ProgramState {
     glm::vec3 clearColor = glm::vec3(0);
     bool ImGuiEnabled = false;
@@ -65,6 +72,7 @@ struct ProgramState {
     glm::vec3 backpackPosition = glm::vec3(0.0f);
     float backpackScale = 1.0f;
     PointLight pointLight;
+    DirLight dirLight;
     ProgramState()
             : camera(glm::vec3(0.0f, 0.0f, 3.0f)) {}
 
@@ -175,6 +183,7 @@ int main() {
     // build and compile shaders
     // -------------------------
     Shader ourShader("resources/shaders/2.model_lighting.vs", "resources/shaders/2.model_lighting.fs");
+    Shader moonShader("resources/shaders/moon.vs", "resources/shaders/moon.fs");
     Shader skyboxShader("resources/shaders/skybox.vs", "resources/shaders/skybox.fs");
 
     // load models
@@ -182,6 +191,7 @@ int main() {
     Model terrain("resources/objects/grass/grass.obj");
     terrain.SetShaderTextureNamePrefix("material.");
 
+    // models with already flipped textures
     stbi_set_flip_vertically_on_load(false);
     Model barn("resources/objects/barn/barn.obj");
     barn.SetShaderTextureNamePrefix("material.");
@@ -195,6 +205,9 @@ int main() {
     vampire = std::make_unique<Vampire>();
     stbi_set_flip_vertically_on_load(true);
 
+    Model moon("resources/objects/moon/Moon.obj");
+    lantern.SetShaderTextureNamePrefix("material.");
+
     PointLight& pointLight = programState->pointLight;
     // pointLight.position = glm::vec3(4.0f, 4.0, 0.0);
     // position of lantern
@@ -207,6 +220,12 @@ int main() {
     pointLight.constant = 1.0f;
     pointLight.linear = 0.09f;
     pointLight.quadratic = 0.032f;
+
+    auto &dirLight = programState->dirLight;
+    dirLight.direction = glm::normalize(-glm::vec3(-30.0f, 100.0f, 90.0f));
+    dirLight.ambient = glm::vec3(0.05, 0.05, 0.05);
+    dirLight.diffuse = glm::vec3(0.25, 0.25, 0.25);
+    dirLight.specular = glm::vec3(1.0, 1.0, 1.0);
 
     // fixed height for FPS camera
     programState->camera.Position.y = 5.5f;
@@ -324,12 +343,16 @@ int main() {
         ourShader.uniform("pointLight.constant", pointLight.constant);
         ourShader.uniform("pointLight.linear", pointLight.linear);
         ourShader.uniform("pointLight.quadratic", pointLight.quadratic);
+        ourShader.uniform("dirLight.direction", dirLight.direction);
+        ourShader.uniform("dirLight.ambient", dirLight.ambient);
+        ourShader.uniform("dirLight.diffuse", dirLight.diffuse);
+        ourShader.uniform("dirLight.specular", dirLight.specular);
         ourShader.uniform("viewPosition", programState->camera.Position);
         ourShader.uniform("material.shininess", 32.0f);
         // view/projection transformations
         glm::mat4 projection = glm::perspective(glm::radians(programState->camera.Zoom),
                                                 static_cast<float>(screen.width) / static_cast<float>(screen.height),
-                                                0.1f, 100.0f);
+                                                0.1f, 200.0f);
         glm::mat4 view = programState->camera.GetViewMatrix();
         ourShader.uniform("projection", projection);
         ourShader.uniform("view", view);
@@ -346,6 +369,12 @@ int main() {
         ourShader.uniform("model", model);
         terrain.Draw(ourShader);
 
+        ourShader.uniform("material.shininess", 1.0f);
+        for (const auto &modelMatrix : pineModels) {
+            ourShader.uniform("model", modelMatrix);
+            pine.Draw(ourShader);
+        }
+
         model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.9f, -40.0f));
         model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0, 1, 0));
         ourShader.uniform("model", model);
@@ -356,10 +385,13 @@ int main() {
         ourShader.uniform("model", model);
         lantern.Draw(ourShader);
 
-        for (const auto &modelMatrix : pineModels) {
-            ourShader.uniform("model", modelMatrix);
-            pine.Draw(ourShader);
-        }
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(-30.0f, 100.0f, 90.0f));
+        model = glm::scale(model, glm::vec3(2.0f));
+        moonShader.uniform("model", model);
+        moonShader.uniform("view", view);
+        moonShader.uniform("projection", projection);
+        moon.Draw(moonShader);
 
         vampire->draw(ourShader, currentFrame, deltaTime);
 
@@ -456,6 +488,16 @@ void DrawImGui(ProgramState *programState) {
         ImGui::DragFloat("pointLight.constant", &programState->pointLight.constant, 0.05, 0.0, 1.0);
         ImGui::DragFloat("pointLight.linear", &programState->pointLight.linear, 0.05, 0.0, 1.0);
         ImGui::DragFloat("pointLight.quadratic", &programState->pointLight.quadratic, 0.05, 0.0, 1.0);
+
+        static float ambientConst {programState->dirLight.ambient.r};
+        static float diffuseConst {programState->dirLight.diffuse.r};
+        static float specularConst {programState->dirLight.specular.r};
+        ImGui::DragFloat("dirLight.ambient", &ambientConst, 0.05, 0.0, 1.0);
+        ImGui::DragFloat("dirLight.diffuse", &diffuseConst, 0.05, 0.0, 1.0);
+        ImGui::DragFloat("dirLight.specular", &specularConst, 0.05, 0.0, 1.0);
+        programState->dirLight.ambient = glm::vec3(ambientConst);
+        programState->dirLight.diffuse = glm::vec3(diffuseConst);
+        programState->dirLight.specular = glm::vec3(specularConst);
 
         ImGui::End();
     }
