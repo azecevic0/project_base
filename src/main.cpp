@@ -16,8 +16,10 @@
 
 #include <learnopengl/cubemap.h>
 #include <learnopengl/vampire.h>
+
 #include <learnopengl/DeferredShading.h>
 #include <learnopengl/magic_light.h>
+#include <learnopengl/hdr.h>
 
 #include <iostream>
 #include <memory>
@@ -80,8 +82,8 @@ struct ProgramState {
     PointLight pointLight;
     DirLight dirLight;
     bool flashlight {false};
-
     std::unique_ptr<DeferredShading> deferredShading;
+    HDR hdr {SCR_WIDTH, SCR_HEIGHT};
 
     ProgramState()
             : camera(glm::vec3(0.0f, 0.0f, 3.0f)) {}
@@ -195,6 +197,7 @@ int main() {
     Shader ourShader("resources/shaders/2.model_lighting.vs", "resources/shaders/2.model_lighting.fs");
     Shader moonShader("resources/shaders/moon.vs", "resources/shaders/moon.fs");
     Shader skyboxShader("resources/shaders/skybox.vs", "resources/shaders/skybox.fs");
+    Shader hdrShader("resources/shaders/hdr.vs", "resources/shaders/hdr.fs");
 
     Shader shaderGeometryPass("resources/shaders/g_buffer.vs", "resources/shaders/g_buffer.fs");
     Shader shaderLightingPass("resources/shaders/deferred_shading.vs", "resources/shaders/deferred_shading.fs");
@@ -497,8 +500,9 @@ int main() {
         // vampire->draw(ourShader, currentFrame, deltaTime);
         vampire->draw(geometryPassShader, currentFrame, deltaTime);
 
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        programState->deferredShading->unbind();
 
+        programState->hdr.bind();
         // 2. lighting pass: calculate lighting by iterating over a screen filled quad pixel-by-pixel using the gbuffer's content.
         // -----------------------------------------------------------------------------------------------------------------------
         programState->deferredShading->bindTextures();
@@ -546,6 +550,8 @@ int main() {
 
         skybox.draw(view, projection);
 
+        programState->hdr.unbind();
+        programState->hdr.render(hdrShader);
 
         if (programState->ImGuiEnabled)
             DrawImGui(programState);
@@ -681,6 +687,13 @@ void DrawImGui(ProgramState *programState) {
         programState->dirLight.ambient = glm::vec3(ambientConst);
         programState->dirLight.diffuse = glm::vec3(diffuseConst);
         programState->dirLight.specular = glm::vec3(specularConst);
+
+        static bool hdrMode {programState->hdr.mode()};
+        static float hdrExposure {programState->hdr.exposure()};
+        ImGui::Checkbox("HDR", &hdrMode);
+        ImGui::DragFloat("hdr.exposure", &hdrExposure, 0.05, 0.0, 5.0);
+        programState->hdr.setMode(hdrMode);
+        programState->hdr.setExposure(hdrExposure);
 
         ImGui::End();
     }
