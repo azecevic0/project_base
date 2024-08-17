@@ -73,6 +73,7 @@ struct ProgramState {
     float backpackScale = 1.0f;
     PointLight pointLight;
     DirLight dirLight;
+    bool flashlight {false};
     ProgramState()
             : camera(glm::vec3(0.0f, 0.0f, 3.0f)) {}
 
@@ -227,6 +228,16 @@ int main() {
     dirLight.diffuse = glm::vec3(0.25, 0.25, 0.25);
     dirLight.specular = glm::vec3(1.0, 1.0, 1.0);
 
+    ourShader.uniform("spotLight.ambient", 0.0f, 0.0f, 0.0f);
+    ourShader.uniform("spotLight.diffuse", 1.0f, 1.0f, 1.0f);
+    ourShader.uniform("spotLight.specular", 1.0f, 1.0f, 1.0f);
+    ourShader.uniform("spotLight.constant", 1.0f);
+    ourShader.uniform("spotLight.linear", 0.014f);
+    ourShader.uniform("spotLight.quadratic", 0.0007f);
+    ourShader.uniform("spotLight.cutOff", glm::cos(glm::radians(14.0f)));
+    ourShader.uniform("spotLight.outerCutOff", glm::cos(glm::radians(17.5f)));
+
+
     // fixed height for FPS camera
     programState->camera.Position.y = 5.5f;
 
@@ -347,6 +358,9 @@ int main() {
         ourShader.uniform("dirLight.ambient", dirLight.ambient);
         ourShader.uniform("dirLight.diffuse", dirLight.diffuse);
         ourShader.uniform("dirLight.specular", dirLight.specular);
+        ourShader.uniform("spotLight.position", programState->camera.Position);
+        ourShader.uniform("spotLight.direction", programState->camera.Front);
+        ourShader.uniform("flashlight", programState->flashlight);
         ourShader.uniform("viewPosition", programState->camera.Position);
         ourShader.uniform("material.shininess", 32.0f);
         // view/projection transformations
@@ -525,6 +539,8 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
         } else {
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         }
+    } else if (key == GLFW_KEY_F && action == GLFW_PRESS) {
+        programState->flashlight = !programState->flashlight;
     }
 }
 
