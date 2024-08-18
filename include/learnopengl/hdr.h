@@ -10,29 +10,8 @@
 class HDR {
 
 public:
-    HDR(const unsigned width, const unsigned height)
-        : m_width {width},
-          m_height {height}
-    {
-        glGenFramebuffers(1, &m_FB0);
-        // create floating point color buffer
-        glGenTextures(1, &m_colorBuffer);
-        glBindTexture(GL_TEXTURE_2D, m_colorBuffer);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, m_width, m_height, 0, GL_RGBA, GL_FLOAT, nullptr);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        // create depth buffer (renderbuffer)
-        glGenRenderbuffers(1, &m_rboDepth);
-        glBindRenderbuffer(GL_RENDERBUFFER, m_rboDepth);
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, m_width, m_height);
-        // attach buffers
-        glBindFramebuffer(GL_FRAMEBUFFER, m_FB0);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_colorBuffer, 0);
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_rboDepth);
-        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-            std::cout << "Framebuffer not complete!" << std::endl;
-        }
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    HDR(const unsigned width, const unsigned height) {
+        resize(width, height);
 
         float quadVertices[] = {
             // positions        // texture Coords
@@ -73,6 +52,32 @@ public:
         glBindVertexArray(0);
     }
 
+    void resize(const unsigned width, const unsigned height) {
+        glDeleteFramebuffers(1, &m_FB0);
+        glDeleteTextures(1, &m_colorBuffer);
+        glDeleteRenderbuffers(1, &m_rboDepth);
+
+        glGenFramebuffers(1, &m_FB0);
+        // create floating point color buffer
+        glGenTextures(1, &m_colorBuffer);
+        glBindTexture(GL_TEXTURE_2D, m_colorBuffer);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        // create depth buffer (renderbuffer)
+        glGenRenderbuffers(1, &m_rboDepth);
+        glBindRenderbuffer(GL_RENDERBUFFER, m_rboDepth);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
+        // attach buffers
+        glBindFramebuffer(GL_FRAMEBUFFER, m_FB0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_colorBuffer, 0);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_rboDepth);
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+            std::cout << "Framebuffer not complete!" << std::endl;
+        }
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+
     float exposure() const {
         return m_exposure;
     }
@@ -92,9 +97,9 @@ public:
 private:
     unsigned m_width;
     unsigned m_height;
-    GLuint m_FB0 {};
-    GLuint m_colorBuffer {};
-    GLuint m_rboDepth {};
+    GLuint m_FB0 {0u};
+    GLuint m_colorBuffer {0u};
+    GLuint m_rboDepth {0u};
 
     GLuint m_quadVAO;
     GLuint m_quadVBO;
