@@ -16,6 +16,7 @@
 
 #include <learnopengl/cubemap.h>
 #include <learnopengl/vampire.h>
+#include <learnopengl/DeferredShading.h>
 
 #include <iostream>
 #include <memory>
@@ -31,6 +32,8 @@ void processInput(GLFWwindow *window);
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods);
 
 void mouse_button_callback(GLFWwindow *window, int button, int action, int mods);
+
+void renderQuad();
 
 // settings
 const unsigned int SCR_WIDTH = 800;
@@ -74,6 +77,9 @@ struct ProgramState {
     PointLight pointLight;
     DirLight dirLight;
     bool flashlight {false};
+
+    std::unique_ptr<DeferredShading> deferredShading;
+
     ProgramState()
             : camera(glm::vec3(0.0f, 0.0f, 3.0f)) {}
 
@@ -187,6 +193,12 @@ int main() {
     Shader moonShader("resources/shaders/moon.vs", "resources/shaders/moon.fs");
     Shader skyboxShader("resources/shaders/skybox.vs", "resources/shaders/skybox.fs");
 
+    Shader shaderGeometryPass("resources/shaders/g_buffer.vs", "resources/shaders/g_buffer.fs");
+    Shader shaderLightingPass("resources/shaders/deferred_shading.vs", "resources/shaders/deferred_shading.fs");
+    Shader shaderLightBox("resources/shaders/moon.vs", "resources/shaders/moon.fs");
+
+    programState->deferredShading = std::make_unique<DeferredShading>(SCR_WIDTH, SCR_HEIGHT, shaderGeometryPass, shaderLightingPass);
+
     // load models
     // -----------
     Model terrain("resources/objects/grass/grass.obj");
@@ -228,15 +240,15 @@ int main() {
     dirLight.diffuse = glm::vec3(0.25, 0.25, 0.25);
     dirLight.specular = glm::vec3(1.0, 1.0, 1.0);
 
-    ourShader.uniform("spotLight.ambient", 0.0f, 0.0f, 0.0f);
-    ourShader.uniform("spotLight.diffuse", 1.0f, 1.0f, 1.0f);
-    ourShader.uniform("spotLight.specular", 1.0f, 1.0f, 1.0f);
-    ourShader.uniform("spotLight.constant", 1.0f);
-    ourShader.uniform("spotLight.linear", 0.014f);
-    ourShader.uniform("spotLight.quadratic", 0.0007f);
-    ourShader.uniform("spotLight.cutOff", glm::cos(glm::radians(14.0f)));
-    ourShader.uniform("spotLight.outerCutOff", glm::cos(glm::radians(17.5f)));
-
+    Shader &lightingPassShader = programState->deferredShading->lightingPassShader();
+    lightingPassShader.uniform("spotLight.ambient", 0.0f, 0.0f, 0.0f);
+    lightingPassShader.uniform("spotLight.diffuse", 1.0f, 1.0f, 1.0f);
+    lightingPassShader.uniform("spotLight.specular", 1.0f, 1.0f, 1.0f);
+    lightingPassShader.uniform("spotLight.constant", 1.0f);
+    lightingPassShader.uniform("spotLight.linear", 0.014f);
+    lightingPassShader.uniform("spotLight.quadratic", 0.0007f);
+    lightingPassShader.uniform("spotLight.cutOff", glm::cos(glm::radians(14.0f)));
+    lightingPassShader.uniform("spotLight.outerCutOff", glm::cos(glm::radians(17.5f)));
 
     // fixed height for FPS camera
     programState->camera.Position.y = 5.5f;
@@ -339,37 +351,50 @@ int main() {
         processInput(window);
 
 
+        // // render
+        // // ------
+        // glClearColor(programState->clearColor.r, programState->clearColor.g, programState->clearColor.b, 1.0f);
+        // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
         // render
         // ------
-        glClearColor(programState->clearColor.r, programState->clearColor.g, programState->clearColor.b, 1.0f);
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // don't forget to enable shader before setting uniforms
-        ourShader.use();
-        // pointLight.position = glm::vec3(4.0 * cos(currentFrame), 4.0f, 4.0 * sin(currentFrame));
-        ourShader.uniform("pointLight.position", pointLight.position);
-        ourShader.uniform("pointLight.ambient", pointLight.ambient);
-        ourShader.uniform("pointLight.diffuse", pointLight.diffuse);
-        ourShader.uniform("pointLight.specular", pointLight.specular);
-        ourShader.uniform("pointLight.constant", pointLight.constant);
-        ourShader.uniform("pointLight.linear", pointLight.linear);
-        ourShader.uniform("pointLight.quadratic", pointLight.quadratic);
-        ourShader.uniform("dirLight.direction", dirLight.direction);
-        ourShader.uniform("dirLight.ambient", dirLight.ambient);
-        ourShader.uniform("dirLight.diffuse", dirLight.diffuse);
-        ourShader.uniform("dirLight.specular", dirLight.specular);
-        ourShader.uniform("spotLight.position", programState->camera.Position);
-        ourShader.uniform("spotLight.direction", programState->camera.Front);
-        ourShader.uniform("flashlight", programState->flashlight);
-        ourShader.uniform("viewPosition", programState->camera.Position);
-        ourShader.uniform("material.shininess", 32.0f);
+        // 1. geometry pass: render scene's geometry/color data into gbuffer
+        // -----------------------------------------------------------------
+        programState->deferredShading->bindGBuffer();
+
+        // // don't forget to enable shader before setting uniforms
+        // ourShader.use();
+        // // pointLight.position = glm::vec3(4.0 * cos(currentFrame), 4.0f, 4.0 * sin(currentFrame));
+        // ourShader.uniform("pointLight.position", pointLight.position);
+        // ourShader.uniform("pointLight.ambient", pointLight.ambient);
+        // ourShader.uniform("pointLight.diffuse", pointLight.diffuse);
+        // ourShader.uniform("pointLight.specular", pointLight.specular);
+        // ourShader.uniform("pointLight.constant", pointLight.constant);
+        // ourShader.uniform("pointLight.linear", pointLight.linear);
+        // ourShader.uniform("pointLight.quadratic", pointLight.quadratic);
+        // ourShader.uniform("dirLight.direction", dirLight.direction);
+        // ourShader.uniform("dirLight.ambient", dirLight.ambient);
+        // ourShader.uniform("dirLight.diffuse", dirLight.diffuse);
+        // ourShader.uniform("dirLight.specular", dirLight.specular);
+        // ourShader.uniform("spotLight.position", programState->camera.Position);
+        // ourShader.uniform("spotLight.direction", programState->camera.Front);
+        // ourShader.uniform("flashlight", programState->flashlight);
+        // ourShader.uniform("viewPosition", programState->camera.Position);
+        // ourShader.uniform("material.shininess", 32.0f);
         // view/projection transformations
         glm::mat4 projection = glm::perspective(glm::radians(programState->camera.Zoom),
                                                 static_cast<float>(screen.width) / static_cast<float>(screen.height),
                                                 0.1f, 200.0f);
         glm::mat4 view = programState->camera.GetViewMatrix();
-        ourShader.uniform("projection", projection);
-        ourShader.uniform("view", view);
+        // ourShader.uniform("projection", projection);
+        // ourShader.uniform("view", view);
+
+        auto &geometryPassShader = programState->deferredShading->geometryPassShader();
+        geometryPassShader.uniform("projection", projection);
+        geometryPassShader.uniform("view", view);
 
         // render the loaded model
         // glm::mat4 model = glm::mat4(1.0f);
@@ -380,36 +405,75 @@ int main() {
         // ourModel.Draw(ourShader);
 
         glm::mat4 model = glm::mat4(1.0f);
-        ourShader.uniform("model", model);
-        terrain.Draw(ourShader);
+        // ourShader.uniform("model", model);
+        geometryPassShader.uniform("model", model);
+        terrain.Draw(geometryPassShader);
 
-        ourShader.uniform("material.shininess", 1.0f);
+        geometryPassShader.uniform("material.shininess", 1.0f);
         for (const auto &modelMatrix : pineModels) {
-            ourShader.uniform("model", modelMatrix);
-            pine.Draw(ourShader);
+            // ourShader.uniform("model", model);
+            geometryPassShader.uniform("model", modelMatrix);
+            pine.Draw(geometryPassShader);
         }
 
         model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.9f, -40.0f));
         model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0, 1, 0));
-        ourShader.uniform("model", model);
-        barn.Draw(ourShader);
+        // ourShader.uniform("model", model);
+        geometryPassShader.uniform("model", model);
+        barn.Draw(geometryPassShader);
 
         model = glm::translate(glm::mat4(1.0f), glm::vec3(4.0f, 6.65f, -33.0f));
         model = glm::scale(model, glm::vec3(0.3f));
-        ourShader.uniform("model", model);
-        lantern.Draw(ourShader);
+        // ourShader.uniform("model", model);
+        geometryPassShader.uniform("model", model);
+        lantern.Draw(geometryPassShader);
+
+        // vampire->draw(ourShader, currentFrame, deltaTime);
+        vampire->draw(geometryPassShader, currentFrame, deltaTime);
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        // 2. lighting pass: calculate lighting by iterating over a screen filled quad pixel-by-pixel using the gbuffer's content.
+        // -----------------------------------------------------------------------------------------------------------------------
+        programState->deferredShading->bindTextures();
+        // send light relevant uniforms
+        auto &lightingPassShader = programState->deferredShading->lightingPassShader();
+        lightingPassShader.uniform("pointLight.position", pointLight.position);
+        lightingPassShader.uniform("pointLight.ambient", pointLight.ambient);
+        lightingPassShader.uniform("pointLight.diffuse", pointLight.diffuse);
+        lightingPassShader.uniform("pointLight.specular", pointLight.specular);
+        lightingPassShader.uniform("pointLight.constant", pointLight.constant);
+        lightingPassShader.uniform("pointLight.linear", pointLight.linear);
+        lightingPassShader.uniform("pointLight.quadratic", pointLight.quadratic);
+        lightingPassShader.uniform("dirLight.direction", dirLight.direction);
+        lightingPassShader.uniform("dirLight.ambient", dirLight.ambient);
+        lightingPassShader.uniform("dirLight.diffuse", dirLight.diffuse);
+        lightingPassShader.uniform("dirLight.specular", dirLight.specular);
+        lightingPassShader.uniform("spotLight.position", programState->camera.Position);
+        lightingPassShader.uniform("spotLight.direction", programState->camera.Front);
+        lightingPassShader.uniform("flashlight", programState->flashlight);
+        lightingPassShader.uniform("viewPosition", programState->camera.Position);
+        lightingPassShader.uniform("material.shininess", 32.0f);
+        // finally render quad
+        programState->deferredShading->render();
+
+        // 3. render lights on top of scene
+        // --------------------------------
+        shaderLightBox.use();
+        shaderLightBox.uniform("projection", projection);
+        shaderLightBox.uniform("view", view);
 
         model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(-30.0f, 100.0f, 90.0f));
         model = glm::scale(model, glm::vec3(2.0f));
-        moonShader.uniform("model", model);
-        moonShader.uniform("view", view);
-        moonShader.uniform("projection", projection);
-        moon.Draw(moonShader);
-
-        vampire->draw(ourShader, currentFrame, deltaTime);
+        shaderLightBox.uniform("model", model);
+        // moonShader.uniform("model", model);
+        // moonShader.uniform("view", view);
+        // moonShader.uniform("projection", projection);
+        moon.Draw(shaderLightBox);
 
         skybox.draw(view, projection);
+
 
         if (programState->ImGuiEnabled)
             DrawImGui(programState);
@@ -432,6 +496,38 @@ int main() {
     glfwTerminate();
     return 0;
 }
+
+// renderQuad() renders a 1x1 XY quad in NDC
+// -----------------------------------------
+unsigned int quadVAO = 0;
+unsigned int quadVBO;
+void renderQuad()
+{
+    if (quadVAO == 0)
+    {
+        float quadVertices[] = {
+            // positions        // texture Coords
+            -1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
+            -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+             1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
+             1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+        };
+        // setup plane VAO
+        glGenVertexArrays(1, &quadVAO);
+        glGenBuffers(1, &quadVBO);
+        glBindVertexArray(quadVAO);
+        glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    }
+    glBindVertexArray(quadVAO);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    glBindVertexArray(0);
+}
+
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 // ---------------------------------------------------------------------------------------------------------
@@ -456,6 +552,7 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
     // height will be significantly larger than specified on retina displays.
     screen.width = width;
     screen.height = height;
+    programState->deferredShading->resize(width, height);
     glViewport(0, 0, width, height);
 }
 
