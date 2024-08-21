@@ -49,7 +49,8 @@ add_executable(${PROJECT_NAME}
         include/learnopengl/texture.h
         include/learnopengl/cubemap.h
         include/learnopengl/vampire.h
-        include/learnopengl/DeferredShading.h)
+        include/learnopengl/DeferredShading.h
+        include/learnopengl/magic_light.h)
 
 target_link_libraries(${PROJECT_NAME} ${LIBS})
 

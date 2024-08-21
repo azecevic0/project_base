@@ -19,6 +19,8 @@ struct PointLight {
     float constant;
     float linear;
     float quadratic;
+
+    float radius;
 };
 
 struct SpotLight {
@@ -53,6 +55,10 @@ uniform sampler2D gAlbedoSpec;
 uniform DirLight dirLight;
 uniform PointLight pointLight;
 uniform SpotLight spotLight;
+
+const int NR_LIGHTS = 100;
+uniform PointLight magicLights[NR_LIGHTS];
+
 uniform Material material;
 
 uniform vec3 viewPosition;
@@ -133,6 +139,16 @@ void main()
     result += CalcPointLight(pointLight, normal, FragPos, viewDir, Diffuse, Specular);
     if (flashlight) {
         result += CalcSpotLight(spotLight, normal, FragPos, viewDir, Diffuse, Specular);
+    }
+
+    for(int i = 0; i < NR_LIGHTS; ++i)
+    {
+        // calculate distance between light source and current fragment
+        float distance = length(magicLights[i].position - FragPos);
+        if(distance < magicLights[i].radius)
+        {
+            result += CalcPointLight(magicLights[i], normal, FragPos, viewDir, Diffuse, Specular);
+        }
     }
 
     FragColor = vec4(result, 1.0);

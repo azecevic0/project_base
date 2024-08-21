@@ -17,6 +17,7 @@
 #include <learnopengl/cubemap.h>
 #include <learnopengl/vampire.h>
 #include <learnopengl/DeferredShading.h>
+#include <learnopengl/magic_light.h>
 
 #include <iostream>
 #include <memory>
@@ -58,6 +59,8 @@ struct PointLight {
     float constant;
     float linear;
     float quadratic;
+
+    float radius;
 };
 
 struct DirLight {
@@ -334,6 +337,68 @@ int main() {
         pineModels.push_back(model);
     }
 
+    std::vector<glm::vec3> lightColors {
+        {0.62, 0.35, 0.47},
+        {0.44, 0.69, 0.16},
+        {0.73, 0.43, 0.13},
+        {0.01, 0.31, 0.54},
+        {0.27, 0.52, 0.18},
+        {0.4, 0.94, 0.0},
+        {0.03, 0.28, 0.54},
+        {0.81, 0.19, 0.31},
+        {0.91, 0.33, 0.06},
+        {0.17, 0.34, 0.51},
+        {0.69, 0.43, 0.01},
+        {0.24, 0.6, 0.09},
+        {0.72, 0.12, 0.23},
+        {0.15, 0.43, 0.51},
+        {0.49, 0.54, 0.06},
+        {0.4, 0.9, 0.24},
+        {0.02, 0.96, 0.39},
+        {0.05, 0.48, 0.92},
+        {0.4, 0.17, 0.51},
+        {0.05, 0.66, 0.1},
+        {0.16, 0.01, 0.67},
+        {0.91, 0.46, 0.02},
+        {0.81, 0.24, 0.22},
+        {0.04, 0.62, 0.2},
+        {0.49, 0.44, 0.9},
+        {0.08, 0.96, 0.34},
+        {0.19, 0.81, 0.36},
+        {0.61, 0.23, 0.17},
+        {0.43, 0.76, 0.01},
+        {0.04, 0.95, 0.06},
+        {0.39, 0.88, 0.07},
+        {0.79, 0.0, 0.21},
+        {0.51, 0.44, 0.4},
+        {0.21, 0.43, 0.5},
+        {0.08, 0.33, 0.84},
+        {0.73, 0.11, 0.18},
+        {0.39, 0.93, 0.26},
+        {0.46, 0.72, 0.31},
+        {0.41, 0.57, 0.08},
+        {0.05, 0.31, 0.98},
+        {0.95, 0.07, 0.0},
+        {0.83, 0.08, 0.08},
+        {0.38, 0.88, 0.36},
+        {0.82, 0.33, 0.05},
+        {0.54, 0.1, 0.25},
+        {0.39, 0.32, 0.81},
+        {0.32, 0.9, 0.4},
+        {0.92, 0.17, 0.37},
+        {0.21, 0.16, 0.77},
+        {0.76, 0.36, 0.16}
+    };
+
+    std::vector<MagicLight> magicLights;
+    for (auto i = 0u; i < lightColors.size(); i++) {
+        glm::vec3 position {pinePositions[i].x, 4.0f, pinePositions[i].z};
+        magicLights.emplace_back(position, lightColors[i], 2 * i, lightingPassShader);
+
+        position.y = 10.0f;
+        magicLights.emplace_back(position, lightColors[lightColors.size() - i], 2 * i + 1, lightingPassShader);
+    }
+
     // draw in wireframe
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
@@ -445,6 +510,8 @@ int main() {
         lightingPassShader.uniform("pointLight.constant", pointLight.constant);
         lightingPassShader.uniform("pointLight.linear", pointLight.linear);
         lightingPassShader.uniform("pointLight.quadratic", pointLight.quadratic);
+        /// TODO: calculate radius
+        lightingPassShader.uniform("pointLight.radius", 200.0f);
         lightingPassShader.uniform("dirLight.direction", dirLight.direction);
         lightingPassShader.uniform("dirLight.ambient", dirLight.ambient);
         lightingPassShader.uniform("dirLight.diffuse", dirLight.diffuse);
@@ -454,6 +521,10 @@ int main() {
         lightingPassShader.uniform("flashlight", programState->flashlight);
         lightingPassShader.uniform("viewPosition", programState->camera.Position);
         lightingPassShader.uniform("material.shininess", 32.0f);
+
+        for (auto &light : magicLights) {
+            light.nextFrame(currentFrame);
+        }
         // finally render quad
         programState->deferredShading->render();
 
