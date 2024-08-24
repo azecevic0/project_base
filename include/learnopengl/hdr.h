@@ -94,6 +94,10 @@ public:
         m_is_hdr = mode;
     }
 
+    GLuint buffer() {
+        return m_FB0;
+    }
+
 private:
     unsigned m_width;
     unsigned m_height;

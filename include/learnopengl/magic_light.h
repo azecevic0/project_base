@@ -33,7 +33,7 @@ public:
         shader.uniform("magicLights[" + std::to_string(index) + "].quadratic", quadratic);
         // then calculate radius of light volume/sphere
         const float maxBrightness = std::fmaxf(std::fmaxf(color.r, color.g), color.b);
-        float radius = (-linear + std::sqrt(linear * linear - 4 * quadratic * (constant - (256.0f / 5.0f) * maxBrightness))) / (2.0f * quadratic);
+        float radius = (-linear + std::sqrt(linear * linear - 4 * quadratic * (constant - (65536.0f / 128.0f) * maxBrightness))) / (2.0f * quadratic);
         shader.uniform("magicLights[" + std::to_string(index) + "].radius", radius);
     }
 

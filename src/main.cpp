@@ -242,9 +242,9 @@ int main() {
 
     auto &dirLight = programState->dirLight;
     dirLight.direction = glm::normalize(-glm::vec3(-30.0f, 100.0f, 90.0f));
-    dirLight.ambient = glm::vec3(0.05, 0.05, 0.05);
-    dirLight.diffuse = glm::vec3(0.25, 0.25, 0.25);
-    dirLight.specular = glm::vec3(1.0, 1.0, 1.0);
+    dirLight.ambient = glm::vec3(0.02, 0.02, 0.02);
+    dirLight.diffuse = glm::vec3(0.1, 0.1, 0.1);
+    dirLight.specular = glm::vec3(0.0, 0.0, 0.0);
 
     Shader &lightingPassShader = programState->deferredShading->lightingPassShader();
     lightingPassShader.uniform("spotLight.ambient", 0.0f, 0.0f, 0.0f);
@@ -397,10 +397,10 @@ int main() {
     std::vector<MagicLight> magicLights;
     for (auto i = 0u; i < lightColors.size(); i++) {
         glm::vec3 position {pinePositions[i].x, 4.0f, pinePositions[i].z};
-        magicLights.emplace_back(position, lightColors[i], 2 * i, lightingPassShader);
+        magicLights.emplace_back(position, 0.2f * lightColors[i], 2 * i, lightingPassShader);
 
         position.y = 10.0f;
-        magicLights.emplace_back(position, lightColors[lightColors.size() - i], 2 * i + 1, lightingPassShader);
+        magicLights.emplace_back(position, 0.2f * lightColors[lightColors.size() - i], 2 * i + 1, lightingPassShader);
     }
 
     // draw in wireframe
@@ -491,12 +491,6 @@ int main() {
         geometryPassShader.uniform("model", model);
         barn.Draw(geometryPassShader);
 
-        model = glm::translate(glm::mat4(1.0f), glm::vec3(4.0f, 6.65f, -33.0f));
-        model = glm::scale(model, glm::vec3(0.3f));
-        // ourShader.uniform("model", model);
-        geometryPassShader.uniform("model", model);
-        lantern.Draw(geometryPassShader);
-
         // vampire->draw(ourShader, currentFrame, deltaTime);
         vampire->draw(geometryPassShader, currentFrame, deltaTime);
 
@@ -531,7 +525,7 @@ int main() {
             light.nextFrame(currentFrame);
         }
         // finally render quad
-        programState->deferredShading->render();
+        programState->deferredShading->render(programState->hdr.buffer());
 
         // 3. render lights on top of scene
         // --------------------------------
@@ -541,17 +535,26 @@ int main() {
 
         model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(-30.0f, 100.0f, 90.0f));
-        model = glm::scale(model, glm::vec3(2.0f));
+        model = glm::scale(model, glm::vec3(4.0f));
         shaderLightBox.uniform("model", model);
         // moonShader.uniform("model", model);
         // moonShader.uniform("view", view);
         // moonShader.uniform("projection", projection);
         moon.Draw(shaderLightBox);
 
+        model = glm::translate(glm::mat4(1.0f), glm::vec3(4.0f, 6.65f, -33.0f));
+        model = glm::scale(model, glm::vec3(0.3f));
+        // ourShader.uniform("model", model);
+        shaderLightBox.uniform("model", model);
+        lantern.Draw(geometryPassShader);
+
         skybox.draw(view, projection);
 
         programState->hdr.unbind();
         programState->hdr.render(hdrShader);
+
+        skybox.draw(view, projection);
+
 
         if (programState->ImGuiEnabled)
             DrawImGui(programState);
@@ -631,6 +634,7 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
     screen.width = width;
     screen.height = height;
     programState->deferredShading->resize(width, height);
+    programState->hdr.resize(width, height);
     glViewport(0, 0, width, height);
 }
 
