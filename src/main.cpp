@@ -203,6 +203,9 @@ int main() {
     Shader shaderLightingPass("resources/shaders/deferred_shading.vs", "resources/shaders/deferred_shading.fs");
     Shader shaderLightBox("resources/shaders/moon.vs", "resources/shaders/moon.fs");
 
+    Shader shaderBlur("resources/shaders/blur.vs", "resources/shaders/blur.fs");
+    Shader shaderBloom("resources/shaders/bloom.vs", "resources/shaders/bloom.fs");
+    
     programState->deferredShading = std::make_unique<DeferredShading>(SCR_WIDTH, SCR_HEIGHT, shaderGeometryPass, shaderLightingPass);
 
     // load models
@@ -546,14 +549,18 @@ int main() {
         model = glm::scale(model, glm::vec3(0.3f));
         // ourShader.uniform("model", model);
         shaderLightBox.uniform("model", model);
-        lantern.Draw(geometryPassShader);
+        lantern.Draw(shaderLightBox);
 
         skybox.draw(view, projection);
 
         programState->hdr.unbind();
         programState->hdr.render(hdrShader);
+        shaderBlur.uniform("image", 0);
+        shaderBloom.uniform("scene", 0);
+        shaderBloom.uniform("bloomBlur", 1);
 
-        skybox.draw(view, projection);
+        programState->hdr.blur(shaderBlur);
+        programState->hdr.bloom(shaderBloom);
 
 
         if (programState->ImGuiEnabled)
@@ -693,11 +700,14 @@ void DrawImGui(ProgramState *programState) {
         programState->dirLight.specular = glm::vec3(specularConst);
 
         static bool hdrMode {programState->hdr.mode()};
+        static bool bloomState {programState->hdr.bloomState()};
         static float hdrExposure {programState->hdr.exposure()};
         ImGui::Checkbox("HDR", &hdrMode);
+        ImGui::Checkbox("Bloom", &bloomState);
         ImGui::DragFloat("hdr.exposure", &hdrExposure, 0.05, 0.0, 5.0);
         programState->hdr.setMode(hdrMode);
         programState->hdr.setExposure(hdrExposure);
+        programState->hdr.setBloomState(bloomState);
 
         ImGui::End();
     }

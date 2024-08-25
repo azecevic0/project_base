@@ -18,6 +18,7 @@ void main()
     gNormal = normalize(Normal);
     // and the diffuse per-fragment color
     vec4 albedo = texture(texture_diffuse1, TexCoords);
+    // blending
     if (albedo.a < 0.1)
         discard;
     gAlbedoSpec.rgb = albedo.rgb;
