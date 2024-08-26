@@ -26,6 +26,13 @@ void main()
     if (albedo.a < 0.1)
         discard;
     gAlbedoSpec.rgb = albedo.rgb;
+    
     // store specular intensity in gAlbedoSpec's alpha component
-    gAlbedoSpec.a = texture(material.texture_specular1, TexCoords).r;
+    vec3 specular = texture(material.texture_specular1, TexCoords).rgb;
+    if (specular.r != specular.g || specular.g != specular.b) {
+        // if specular map is defaulted to diffuse map convert it to grayscale
+        gAlbedoSpec.a = dot(specular, vec3(0.299,0.587,0.114));
+    } else {
+        gAlbedoSpec.a = specular.r;
+    }
 }
