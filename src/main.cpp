@@ -394,7 +394,7 @@ int main() {
         magicLights.emplace_back(position, 0.3f * lightColors[i], 2 * i, lightingPassShader);
 
         position.y = 10.0f;
-        magicLights.emplace_back(position, 0.3f * lightColors[lightColors.size() - i], 2 * i + 1, lightingPassShader);
+        magicLights.emplace_back(position, 0.3f * lightColors[lightColors.size() - i - 1], 2 * i + 1, lightingPassShader);
     }
 
     blurShader.uniform("image", 0);
