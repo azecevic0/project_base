@@ -32,7 +32,7 @@ public:
     }
 
     void bind() {
-        glBindFramebuffer(GL_FRAMEBUFFER, m_FB0);
+        glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
@@ -51,7 +51,7 @@ public:
     }
 
     void resize(const unsigned width, const unsigned height) {
-        glDeleteFramebuffers(1, &m_FB0);
+        glDeleteFramebuffers(1, &m_FBO);
         glDeleteTextures(2, m_colorBuffer);
         glDeleteRenderbuffers(1, &m_rboDepth);
 
@@ -60,8 +60,8 @@ public:
 
         // configure (floating point) framebuffers
         // ---------------------------------------
-        glGenFramebuffers(1, &m_FB0);
-        glBindFramebuffer(GL_FRAMEBUFFER, m_FB0);
+        glGenFramebuffers(1, &m_FBO);
+        glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
         // create 2 floating point color buffers (1 for normal rendering, other for brightness threshold values)
         glGenTextures(2, m_colorBuffer);
         for (unsigned int i = 0; i < 2; i++)
@@ -133,7 +133,7 @@ public:
     }
 
     GLuint buffer() const {
-        return m_FB0;
+        return m_FBO;
     }
 
     void blur(Shader &shaderBlur) {
@@ -173,18 +173,16 @@ private:
         glBindVertexArray(0);
     }
 
-    unsigned m_width;
-    unsigned m_height;
-    GLuint m_FB0 {0u};
-    GLuint m_colorBuffer[2];
+    GLuint m_FBO {0u};
+    GLuint m_colorBuffer[2] {0u, 0u};
     GLuint m_rboDepth {0u};
 
-    GLuint m_pingpongFBO[2];
-    GLuint m_pingpongColorbuffers[2];
+    GLuint m_pingpongFBO[2] {0u, 0u};
+    GLuint m_pingpongColorbuffers[2] {0u, 0u};
     bool m_horizontal {true};
 
-    GLuint m_quadVAO;
-    GLuint m_quadVBO;
+    GLuint m_quadVAO {0u};
+    GLuint m_quadVBO {0u};
 
     bool m_is_hdr {true};
     bool m_is_bloom {true};
