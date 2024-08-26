@@ -271,7 +271,6 @@ int main() {
         true
     };
 
-    /// TODO: refactor
     std::vector<glm::vec3> pinePositions = {
         {-35.8, 1.5, -9.3},
         {-36.6, 1.5, -56.6},
@@ -443,40 +442,26 @@ int main() {
                                                 static_cast<float>(screen.width) / static_cast<float>(screen.height),
                                                 0.1f, 200.0f);
         glm::mat4 view = programState->camera.GetViewMatrix();
-        // ourShader.uniform("projection", projection);
-        // ourShader.uniform("view", view);
 
         auto &geometryPassShader = programState->deferredShading->geometryPassShader();
         geometryPassShader.uniform("projection", projection);
         geometryPassShader.uniform("view", view);
 
-        // render the loaded model
-        // glm::mat4 model = glm::mat4(1.0f);
-        // model = glm::translate(model,
-        //                        programState->backpackPosition); // translate it down so it's at the center of the scene
-        // model = glm::scale(model, glm::vec3(programState->backpackScale));    // it's a bit too big for our scene, so scale it down
-        // ourShader.uniform("model", model);
-        // ourModel.Draw(ourShader);
-
         glm::mat4 model = glm::mat4(1.0f);
-        // ourShader.uniform("model", model);
+        geometryPassShader.uniform("material.shininess", 2.0f);
         geometryPassShader.uniform("model", model);
         terrain.Draw(geometryPassShader);
 
-        geometryPassShader.uniform("material.shininess", 1.0f);
         for (const auto &modelMatrix : pineModels) {
-            // ourShader.uniform("model", model);
             geometryPassShader.uniform("model", modelMatrix);
             pine.Draw(geometryPassShader);
         }
 
         model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.9f, -40.0f));
         model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0, 1, 0));
-        // ourShader.uniform("model", model);
         geometryPassShader.uniform("model", model);
         barn.Draw(geometryPassShader);
 
-        // vampire->draw(ourShader, currentFrame, deltaTime);
         vampire->draw(geometryPassShader, currentFrame, deltaTime);
 
         programState->deferredShading->unbind();
@@ -503,7 +488,7 @@ int main() {
         lightingPassShader.uniform("spotLight.direction", programState->camera.Front);
         lightingPassShader.uniform("flashlight", programState->flashlight);
         lightingPassShader.uniform("viewPosition", programState->camera.Position);
-        lightingPassShader.uniform("material.shininess", 32.0f);
+        lightingPassShader.uniform("shininess", 16.0f);
 
         for (auto &light : magicLights) {
             light.nextFrame(currentFrame);
