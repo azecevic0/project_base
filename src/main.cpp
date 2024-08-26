@@ -192,19 +192,16 @@ int main() {
 
     // build and compile shaders
     // -------------------------
-    Shader ourShader("resources/shaders/2.model_lighting.vs", "resources/shaders/2.model_lighting.fs");
-    Shader moonShader("resources/shaders/moon.vs", "resources/shaders/moon.fs");
-    Shader skyboxShader("resources/shaders/skybox.vs", "resources/shaders/skybox.fs");
-    Shader hdrShader("resources/shaders/hdr.vs", "resources/shaders/hdr.fs");
+    Shader skyboxShader("resources/shaders/skybox.vert", "resources/shaders/skybox.frag");
 
-    Shader shaderGeometryPass("resources/shaders/g_buffer.vs", "resources/shaders/g_buffer.fs");
-    Shader shaderLightingPass("resources/shaders/deferred_shading.vs", "resources/shaders/deferred_shading.fs");
-    Shader shaderLightBox("resources/shaders/moon.vs", "resources/shaders/moon.fs");
+    Shader geometryPassShader("resources/shaders/g_buffer.vert", "resources/shaders/g_buffer.frag");
+    Shader lightingPassShader("resources/shaders/deferred_shading.vert", "resources/shaders/deferred_shading.frag");
+    Shader lightSourceShader("resources/shaders/light_source.vert", "resources/shaders/light_source.frag");
 
-    Shader shaderBlur("resources/shaders/blur.vs", "resources/shaders/blur.fs");
-    Shader shaderBloom("resources/shaders/bloom.vs", "resources/shaders/bloom.fs");
-    
-    programState->deferredShading = std::make_unique<DeferredShading>(SCR_WIDTH, SCR_HEIGHT, shaderGeometryPass, shaderLightingPass);
+    Shader blurShader("resources/shaders/blur.vert", "resources/shaders/blur.frag");
+    Shader bloomShader("resources/shaders/bloom.vert", "resources/shaders/bloom.frag");
+
+    programState->deferredShading = std::make_unique<DeferredShading>(SCR_WIDTH, SCR_HEIGHT, geometryPassShader, lightingPassShader);
 
     // load models
     // -----------
@@ -245,7 +242,6 @@ int main() {
     dirLight.diffuse = glm::vec3(0.05, 0.05, 0.05);
     dirLight.specular = glm::vec3(0.05, 0.05, 0.05);
 
-    Shader &lightingPassShader = programState->deferredShading->lightingPassShader();
     lightingPassShader.uniform("spotLight.ambient", 0.0f, 0.0f, 0.0f);
     lightingPassShader.uniform("spotLight.diffuse", 1.0f, 1.0f, 1.0f);
     lightingPassShader.uniform("spotLight.specular", 1.0f, 1.0f, 1.0f);
@@ -401,9 +397,9 @@ int main() {
         magicLights.emplace_back(position, 0.3f * lightColors[lightColors.size() - i], 2 * i + 1, lightingPassShader);
     }
 
-    shaderBlur.uniform("image", 0);
-    shaderBloom.uniform("scene", 0);
-    shaderBloom.uniform("bloomBlur", 1);
+    blurShader.uniform("image", 0);
+    bloomShader.uniform("scene", 0);
+    bloomShader.uniform("bloomBlur", 1);
 
     // draw in wireframe
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -471,7 +467,6 @@ int main() {
         // -----------------------------------------------------------------------------------------------------------------------
         programState->deferredShading->bindTextures();
         // send light relevant uniforms
-        auto &lightingPassShader = programState->deferredShading->lightingPassShader();
         lightingPassShader.uniform("pointLight.position", pointLight.position);
         lightingPassShader.uniform("pointLight.ambient", pointLight.ambient);
         lightingPassShader.uniform("pointLight.diffuse", pointLight.diffuse);
@@ -498,32 +493,31 @@ int main() {
 
         // 3. render lights on top of scene
         // --------------------------------
-        shaderLightBox.use();
-        shaderLightBox.uniform("projection", projection);
-        shaderLightBox.uniform("view", view);
+        lightSourceShader.use();
+        lightSourceShader.uniform("projection", projection);
+        lightSourceShader.uniform("view", view);
 
         model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(-30.0f, 100.0f, 90.0f));
         model = glm::scale(model, glm::vec3(4.0f));
-        shaderLightBox.uniform("model", model);
-        shaderLightBox.uniform("allBright", true);
-        shaderLightBox.uniform("intensity", 5.0f);
-        moon.Draw(shaderLightBox);
+        lightSourceShader.uniform("model", model);
+        lightSourceShader.uniform("allBright", true);
+        lightSourceShader.uniform("intensity", 5.0f);
+        moon.Draw(lightSourceShader);
 
         model = glm::translate(glm::mat4(1.0f), glm::vec3(4.0f, 6.65f, -33.0f));
         model = glm::scale(model, glm::vec3(0.3f));
-        shaderLightBox.uniform("model", model);
-        shaderLightBox.uniform("allBright", false);
-        shaderLightBox.uniform("intensity", 5.0f);
-        lantern.Draw(shaderLightBox);
+        lightSourceShader.uniform("model", model);
+        lightSourceShader.uniform("allBright", false);
+        lightSourceShader.uniform("intensity", 5.0f);
+        lantern.Draw(lightSourceShader);
 
         skybox.draw(view, projection);
 
         programState->hdr.unbind();
-        programState->hdr.render(hdrShader);
 
-        programState->hdr.blur(shaderBlur);
-        programState->hdr.bloom(shaderBloom);
+        programState->hdr.blur(blurShader);
+        programState->hdr.bloom(bloomShader);
 
 
         if (programState->ImGuiEnabled)
