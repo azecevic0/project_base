@@ -9,7 +9,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include <learnopengl/filesystem.h>
 #include <learnopengl/shader.h>
 #include <learnopengl/camera.h>
 #include <learnopengl/model.h>
@@ -43,7 +42,6 @@ const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
 // camera
-
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
@@ -231,33 +229,31 @@ int main() {
     lantern.SetShaderTextureNamePrefix("material.");
 
     PointLight& pointLight = programState->pointLight;
-    // pointLight.position = glm::vec3(4.0f, 4.0, 0.0);
     // position of lantern
     pointLight.position = glm::vec3(4.0f, 6.65f, -33.0f);
-    /// TODO: revert to (0.1, 0.1, 0.1)
-    pointLight.ambient = glm::vec3(1.0, 1.0, 1.0);
-    pointLight.diffuse = glm::vec3(0.6, 0.6, 0.6);
-    pointLight.specular = glm::vec3(1.0, 1.0, 1.0);
+    pointLight.ambient = glm::vec3(0.05, 0.05, 0.05);
+    pointLight.diffuse = glm::vec3(2.0, 2.0, 2.0);
+    pointLight.specular = glm::vec3(2.0, 2.0, 2.0);
 
     pointLight.constant = 1.0f;
-    pointLight.linear = 0.09f;
-    pointLight.quadratic = 0.032f;
+    pointLight.linear = 0.18f;
+    pointLight.quadratic = 0.0625f;
 
     auto &dirLight = programState->dirLight;
     dirLight.direction = glm::normalize(-glm::vec3(-30.0f, 100.0f, 90.0f));
-    dirLight.ambient = glm::vec3(0.02, 0.02, 0.02);
-    dirLight.diffuse = glm::vec3(0.1, 0.1, 0.1);
-    dirLight.specular = glm::vec3(0.0, 0.0, 0.0);
+    dirLight.ambient = glm::vec3(0.01, 0.01, 0.01);
+    dirLight.diffuse = glm::vec3(0.05, 0.05, 0.05);
+    dirLight.specular = glm::vec3(0.05, 0.05, 0.05);
 
     Shader &lightingPassShader = programState->deferredShading->lightingPassShader();
     lightingPassShader.uniform("spotLight.ambient", 0.0f, 0.0f, 0.0f);
     lightingPassShader.uniform("spotLight.diffuse", 1.0f, 1.0f, 1.0f);
     lightingPassShader.uniform("spotLight.specular", 1.0f, 1.0f, 1.0f);
     lightingPassShader.uniform("spotLight.constant", 1.0f);
-    lightingPassShader.uniform("spotLight.linear", 0.014f);
-    lightingPassShader.uniform("spotLight.quadratic", 0.0007f);
-    lightingPassShader.uniform("spotLight.cutOff", glm::cos(glm::radians(14.0f)));
-    lightingPassShader.uniform("spotLight.outerCutOff", glm::cos(glm::radians(17.5f)));
+    lightingPassShader.uniform("spotLight.linear", 0.048f);
+    lightingPassShader.uniform("spotLight.quadratic", 0.0042f);
+    lightingPassShader.uniform("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
+    lightingPassShader.uniform("spotLight.outerCutOff", glm::cos(glm::radians(15.0f)));
 
     // fixed height for FPS camera
     programState->camera.Position.y = 5.5f;
@@ -400,14 +396,21 @@ int main() {
     std::vector<MagicLight> magicLights;
     for (auto i = 0u; i < lightColors.size(); i++) {
         glm::vec3 position {pinePositions[i].x, 4.0f, pinePositions[i].z};
-        magicLights.emplace_back(position, 0.2f * lightColors[i], 2 * i, lightingPassShader);
+        magicLights.emplace_back(position, 0.3f * lightColors[i], 2 * i, lightingPassShader);
 
         position.y = 10.0f;
-        magicLights.emplace_back(position, 0.2f * lightColors[lightColors.size() - i], 2 * i + 1, lightingPassShader);
+        magicLights.emplace_back(position, 0.3f * lightColors[lightColors.size() - i], 2 * i + 1, lightingPassShader);
     }
+
+    shaderBlur.uniform("image", 0);
+    shaderBloom.uniform("scene", 0);
+    shaderBloom.uniform("bloomBlur", 1);
 
     // draw in wireframe
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+    auto start = glfwGetTime();
+    auto frames = 0;
 
     // render loop
     // -----------
@@ -422,12 +425,6 @@ int main() {
         // -----
         processInput(window);
 
-
-        // // render
-        // // ------
-        // glClearColor(programState->clearColor.r, programState->clearColor.g, programState->clearColor.b, 1.0f);
-        // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
         // render
         // ------
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -437,25 +434,6 @@ int main() {
         // -----------------------------------------------------------------
         programState->deferredShading->bindGBuffer();
 
-        // // don't forget to enable shader before setting uniforms
-        // ourShader.use();
-        // // pointLight.position = glm::vec3(4.0 * cos(currentFrame), 4.0f, 4.0 * sin(currentFrame));
-        // ourShader.uniform("pointLight.position", pointLight.position);
-        // ourShader.uniform("pointLight.ambient", pointLight.ambient);
-        // ourShader.uniform("pointLight.diffuse", pointLight.diffuse);
-        // ourShader.uniform("pointLight.specular", pointLight.specular);
-        // ourShader.uniform("pointLight.constant", pointLight.constant);
-        // ourShader.uniform("pointLight.linear", pointLight.linear);
-        // ourShader.uniform("pointLight.quadratic", pointLight.quadratic);
-        // ourShader.uniform("dirLight.direction", dirLight.direction);
-        // ourShader.uniform("dirLight.ambient", dirLight.ambient);
-        // ourShader.uniform("dirLight.diffuse", dirLight.diffuse);
-        // ourShader.uniform("dirLight.specular", dirLight.specular);
-        // ourShader.uniform("spotLight.position", programState->camera.Position);
-        // ourShader.uniform("spotLight.direction", programState->camera.Front);
-        // ourShader.uniform("flashlight", programState->flashlight);
-        // ourShader.uniform("viewPosition", programState->camera.Position);
-        // ourShader.uniform("material.shininess", 32.0f);
         // view/projection transformations
         glm::mat4 projection = glm::perspective(glm::radians(programState->camera.Zoom),
                                                 static_cast<float>(screen.width) / static_cast<float>(screen.height),
@@ -512,8 +490,7 @@ int main() {
         lightingPassShader.uniform("pointLight.constant", pointLight.constant);
         lightingPassShader.uniform("pointLight.linear", pointLight.linear);
         lightingPassShader.uniform("pointLight.quadratic", pointLight.quadratic);
-        /// TODO: calculate radius
-        lightingPassShader.uniform("pointLight.radius", 200.0f);
+        lightingPassShader.uniform("pointLight.radius", 50.0f);
         lightingPassShader.uniform("dirLight.direction", dirLight.direction);
         lightingPassShader.uniform("dirLight.ambient", dirLight.ambient);
         lightingPassShader.uniform("dirLight.diffuse", dirLight.diffuse);
@@ -540,14 +517,10 @@ int main() {
         model = glm::translate(model, glm::vec3(-30.0f, 100.0f, 90.0f));
         model = glm::scale(model, glm::vec3(4.0f));
         shaderLightBox.uniform("model", model);
-        // moonShader.uniform("model", model);
-        // moonShader.uniform("view", view);
-        // moonShader.uniform("projection", projection);
         moon.Draw(shaderLightBox);
 
         model = glm::translate(glm::mat4(1.0f), glm::vec3(4.0f, 6.65f, -33.0f));
         model = glm::scale(model, glm::vec3(0.3f));
-        // ourShader.uniform("model", model);
         shaderLightBox.uniform("model", model);
         lantern.Draw(shaderLightBox);
 
@@ -555,9 +528,6 @@ int main() {
 
         programState->hdr.unbind();
         programState->hdr.render(hdrShader);
-        shaderBlur.uniform("image", 0);
-        shaderBloom.uniform("scene", 0);
-        shaderBloom.uniform("bloomBlur", 1);
 
         programState->hdr.blur(shaderBlur);
         programState->hdr.bloom(shaderBloom);
@@ -572,7 +542,11 @@ int main() {
         // -------------------------------------------------------------------------------
         glfwSwapBuffers(window);
         glfwPollEvents();
+        frames++;
     }
+
+    auto end = glfwGetTime();
+    std::cout << "total time: " << end - start << ", total frames: " << frames  << ", fps: " << (frames / (end - start)) << std::endl;
 
     programState->SaveToFile("resources/program_state.txt");
     delete programState;

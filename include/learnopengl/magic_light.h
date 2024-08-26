@@ -16,6 +16,7 @@ class MagicLight {
 public:
     MagicLight(const glm::vec3 &position, const glm::vec3 &color, const unsigned index, Shader &shader)
         : m_position {position},
+          m_color {color},
           m_index {index},
           m_shader {shader},
           m_speed {random()},
@@ -25,9 +26,9 @@ public:
         shader.uniform("magicLights[" + std::to_string(index) + "].diffuse", color);
         shader.uniform("magicLights[" + std::to_string(index) + "].specular", color);
         // update attenuation parameters and calculate radius
-        const float constant = 1.0f; // note that we don't send this to the shader, we assume it is always 1.0 (in our case)
-        const float linear = 0.14f;
-        const float quadratic = 0.07f;
+        const float constant = 1.0f;
+        const float linear = 0.28f;
+        const float quadratic = 0.14f;
         shader.uniform("magicLights[" + std::to_string(index) + "].constant", linear);
         shader.uniform("magicLights[" + std::to_string(index) + "].linear", linear);
         shader.uniform("magicLights[" + std::to_string(index) + "].quadratic", quadratic);
@@ -49,7 +50,6 @@ private:
         double max {4.0};
 
         double weight {static_cast<double>(std::rand()) / RAND_MAX};
-        std::cout << weight << std::endl;
         return min + weight * (max - min);
     }
 
@@ -58,6 +58,7 @@ private:
     }
 
     glm::vec3 m_position;
+    glm::vec3 m_color;
     const unsigned m_index;
     Shader &m_shader;
     double m_speed;
