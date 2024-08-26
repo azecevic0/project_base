@@ -640,13 +640,7 @@ void DrawImGui(ProgramState *programState) {
 
 
     {
-        static float f = 0.0f;
-        ImGui::Begin("Hello window");
-        ImGui::Text("Hello text");
-        ImGui::SliderFloat("Float slider", &f, 0.0, 1.0);
-        ImGui::ColorEdit3("Background color", (float *) &programState->clearColor);
-        ImGui::DragFloat3("Backpack position", (float*)&programState->backpackPosition);
-        ImGui::DragFloat("Backpack scale", &programState->backpackScale, 0.05, 0.1, 4.0);
+        ImGui::Begin("Parameters");
 
         ImGui::DragFloat("pointLight.constant", &programState->pointLight.constant, 0.05, 0.0, 1.0);
         ImGui::DragFloat("pointLight.linear", &programState->pointLight.linear, 0.05, 0.0, 1.0);
@@ -657,20 +651,12 @@ void DrawImGui(ProgramState *programState) {
         static float specularConst {programState->dirLight.specular.r};
         ImGui::DragFloat("dirLight.ambient", &ambientConst, 0.05, 0.0, 1.0);
         ImGui::DragFloat("dirLight.diffuse", &diffuseConst, 0.05, 0.0, 1.0);
-        ImGui::DragFloat("dirLight.specular", &specularConst, 0.05, 0.0, 1.0);
         programState->dirLight.ambient = glm::vec3(ambientConst);
         programState->dirLight.diffuse = glm::vec3(diffuseConst);
-        programState->dirLight.specular = glm::vec3(specularConst);
 
-        static bool hdrMode {programState->hdr.mode()};
-        static bool bloomState {programState->hdr.bloomState()};
         static float hdrExposure {programState->hdr.exposure()};
-        ImGui::Checkbox("HDR", &hdrMode);
-        ImGui::Checkbox("Bloom", &bloomState);
         ImGui::DragFloat("hdr.exposure", &hdrExposure, 0.05, 0.0, 5.0);
-        programState->hdr.setMode(hdrMode);
         programState->hdr.setExposure(hdrExposure);
-        programState->hdr.setBloomState(bloomState);
 
         ImGui::End();
     }
@@ -693,13 +679,15 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
     if (key == GLFW_KEY_F1 && action == GLFW_PRESS) {
         programState->ImGuiEnabled = !programState->ImGuiEnabled;
         if (programState->ImGuiEnabled) {
-            programState->CameraMouseMovementUpdateEnabled = false;
+            programState->CameraMouseMovementUpdateEnabled = true;
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
         } else {
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         }
     } else if (key == GLFW_KEY_F && action == GLFW_PRESS) {
         programState->flashlight = !programState->flashlight;
+    } else if (key == GLFW_KEY_B && action == GLFW_PRESS) {
+        programState->hdr.setBloomState(!programState->hdr.bloomState());
     }
 }
 

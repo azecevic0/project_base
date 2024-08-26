@@ -187,7 +187,7 @@ private:
     GLuint m_quadVBO;
 
     bool m_is_hdr {true};
-    bool m_is_bloom {false};
+    bool m_is_bloom {true};
     float m_exposure {1.0f};
 };
 
