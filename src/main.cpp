@@ -506,11 +506,15 @@ int main() {
         model = glm::translate(model, glm::vec3(-30.0f, 100.0f, 90.0f));
         model = glm::scale(model, glm::vec3(4.0f));
         shaderLightBox.uniform("model", model);
+        shaderLightBox.uniform("allBright", true);
+        shaderLightBox.uniform("intensity", 5.0f);
         moon.Draw(shaderLightBox);
 
         model = glm::translate(glm::mat4(1.0f), glm::vec3(4.0f, 6.65f, -33.0f));
         model = glm::scale(model, glm::vec3(0.3f));
         shaderLightBox.uniform("model", model);
+        shaderLightBox.uniform("allBright", false);
+        shaderLightBox.uniform("intensity", 5.0f);
         lantern.Draw(shaderLightBox);
 
         skybox.draw(view, projection);
