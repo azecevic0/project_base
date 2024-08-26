@@ -409,6 +409,10 @@ int main() {
     // draw in wireframe
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
+    // face culling
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+
     auto start = glfwGetTime();
     auto frames = 0;
 
