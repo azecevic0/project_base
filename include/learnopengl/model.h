@@ -43,8 +43,8 @@ public:
     // draws the model, and thus all its meshes
     void Draw(Shader &shader)
     {
-        for(unsigned int i = 0; i < meshes.size(); i++)
-            meshes[i].Draw(shader);
+        for(auto & meshe : meshes)
+            meshe.Draw(shader);
     }
 
     void SetShaderTextureNamePrefix(std::string prefix) {
@@ -179,7 +179,7 @@ private:
 
 
         // return a mesh object created from the extracted mesh data
-        return Mesh(vertices, indices, textures);
+        return {vertices, indices, textures};
     }
 
     // checks all material textures of a given type and loads the textures if they're not loaded yet.
@@ -193,11 +193,11 @@ private:
             mat->GetTexture(type, i, &str);
             // check if texture was loaded before and if so, continue to next iteration: skip loading a new texture
             bool skip = false;
-            for(unsigned int j = 0; j < textures_loaded.size(); j++)
+            for(auto & j : textures_loaded)
             {
-                if(std::strcmp(textures_loaded[j].path.data(), str.C_Str()) == 0)
+                if(std::strcmp(j.path.data(), str.C_Str()) == 0)
                 {
-                    textures.push_back(textures_loaded[j]);
+                    textures.push_back(j);
                     skip = true; // a texture with the same filepath has already been loaded, continue to next one. (optimization)
                     break;
                 }
