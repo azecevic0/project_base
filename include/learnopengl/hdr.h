@@ -14,7 +14,6 @@ class HDR {
         resize(width, height);
 
         float quadVertices[] = {
-            // positions        // texture Coords
             -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
             1.0f,  1.0f, 0.0f, 1.0f, 1.0f, 1.0f,  -1.0f, 0.0f, 1.0f, 0.0f,
         };
@@ -60,7 +59,6 @@ class HDR {
         glDeleteTextures(2, m_pingpongColorbuffers);
 
         // configure (floating point) framebuffers
-        // ---------------------------------------
         glGenFramebuffers(1, &m_FBO);
         glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
         // create 2 floating point color buffers (1 for normal rendering, other
