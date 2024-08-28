@@ -5,8 +5,9 @@
 
 class AbstractTexture {
 
-public:
-    explicit AbstractTexture(const GLuint target) : m_target{target} {
+  public:
+    explicit AbstractTexture(const GLuint target)
+        : m_target { target } {
         glGenTextures(1, &m_texture);
         glBindTexture(m_target, m_texture);
     }
@@ -16,18 +17,16 @@ public:
         glTexParameteri(m_target, param, value);
     }
 
-    void bind() const {
-        glBindTexture(m_target, m_texture);
-    }
+    void bind() const { glBindTexture(m_target, m_texture); }
 
     void activate(unsigned location) const {
         glActiveTexture(GL_TEXTURE0 + location);
         bind();
     }
 
-protected:
+  protected:
     GLuint m_texture {};
     GLuint m_target {};
 };
 
-#endif //TEXTURE_H
+#endif // TEXTURE_H

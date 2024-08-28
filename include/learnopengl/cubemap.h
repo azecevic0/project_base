@@ -2,40 +2,36 @@
 #define CUBEMAP_H
 
 #include <learnopengl/image.h>
-#include <learnopengl/texture.h>
 #include <learnopengl/shader.h>
+#include <learnopengl/texture.h>
 
 #include <glm/glm.hpp>
 
-#include <vector>
 #include <iostream>
+#include <vector>
 
 class CubeMap {
 
-public:
-    explicit CubeMap(Shader &shader, const std::vector<std::string> &faces, const bool gammaCorrection = false)
-        : m_texture{GL_TEXTURE_CUBE_MAP},
-          m_shader{shader}
-    {
+  public:
+    explicit CubeMap(
+        Shader &shader, const std::vector<std::string> &faces,
+        const bool gammaCorrection = false)
+        : m_texture { GL_TEXTURE_CUBE_MAP }
+        , m_shader { shader } {
         stbi_set_flip_vertically_on_load(false);
-        for (auto i {0u}; i < faces.size(); ++i) {
-            const Image face {faces[i].c_str()};
+        for (auto i { 0u }; i < faces.size(); ++i) {
+            const Image face { faces[i].c_str() };
             if (!face.data) {
-                std::cerr << "CubeMap::Failed to load at path: " << faces[i].c_str() << std::endl;
+                std::cerr << "CubeMap::Failed to load at path: "
+                          << faces[i].c_str() << std::endl;
                 stbi_set_flip_vertically_on_load(true);
                 return;
             }
             glTexImage2D(
-                GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
-                0,
+                GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0,
                 gammaCorrection ? face.internalFormat : face.dataFormat,
-                face.width,
-                face.height,
-                0,
-                face.dataFormat,
-                GL_UNSIGNED_BYTE,
-                face.data
-            );
+                face.width, face.height, 0, face.dataFormat, GL_UNSIGNED_BYTE,
+                face.data);
         }
         stbi_set_flip_vertically_on_load(true);
 
@@ -47,56 +43,35 @@ public:
 
         float cubeMapVertices[] = {
             // positions
-            -1.0f,  1.0f, -1.0f,
-            -1.0f, -1.0f, -1.0f,
-             1.0f, -1.0f, -1.0f,
-             1.0f, -1.0f, -1.0f,
-             1.0f,  1.0f, -1.0f,
-            -1.0f,  1.0f, -1.0f,
+            -1.0f, 1.0f,  -1.0f, -1.0f, -1.0f, -1.0f, 1.0f,  -1.0f, -1.0f,
+            1.0f,  -1.0f, -1.0f, 1.0f,  1.0f,  -1.0f, -1.0f, 1.0f,  -1.0f,
 
-            -1.0f, -1.0f,  1.0f,
-            -1.0f, -1.0f, -1.0f,
-            -1.0f,  1.0f, -1.0f,
-            -1.0f,  1.0f, -1.0f,
-            -1.0f,  1.0f,  1.0f,
-            -1.0f, -1.0f,  1.0f,
+            -1.0f, -1.0f, 1.0f,  -1.0f, -1.0f, -1.0f, -1.0f, 1.0f,  -1.0f,
+            -1.0f, 1.0f,  -1.0f, -1.0f, 1.0f,  1.0f,  -1.0f, -1.0f, 1.0f,
 
-             1.0f, -1.0f, -1.0f,
-             1.0f, -1.0f,  1.0f,
-             1.0f,  1.0f,  1.0f,
-             1.0f,  1.0f,  1.0f,
-             1.0f,  1.0f, -1.0f,
-             1.0f, -1.0f, -1.0f,
+            1.0f,  -1.0f, -1.0f, 1.0f,  -1.0f, 1.0f,  1.0f,  1.0f,  1.0f,
+            1.0f,  1.0f,  1.0f,  1.0f,  1.0f,  -1.0f, 1.0f,  -1.0f, -1.0f,
 
-            -1.0f, -1.0f,  1.0f,
-            -1.0f,  1.0f,  1.0f,
-             1.0f,  1.0f,  1.0f,
-             1.0f,  1.0f,  1.0f,
-             1.0f, -1.0f,  1.0f,
-            -1.0f, -1.0f,  1.0f,
+            -1.0f, -1.0f, 1.0f,  -1.0f, 1.0f,  1.0f,  1.0f,  1.0f,  1.0f,
+            1.0f,  1.0f,  1.0f,  1.0f,  -1.0f, 1.0f,  -1.0f, -1.0f, 1.0f,
 
-            -1.0f,  1.0f, -1.0f,
-             1.0f,  1.0f, -1.0f,
-             1.0f,  1.0f,  1.0f,
-             1.0f,  1.0f,  1.0f,
-            -1.0f,  1.0f,  1.0f,
-            -1.0f,  1.0f, -1.0f,
+            -1.0f, 1.0f,  -1.0f, 1.0f,  1.0f,  -1.0f, 1.0f,  1.0f,  1.0f,
+            1.0f,  1.0f,  1.0f,  -1.0f, 1.0f,  1.0f,  -1.0f, 1.0f,  -1.0f,
 
-            -1.0f, -1.0f, -1.0f,
-            -1.0f, -1.0f,  1.0f,
-             1.0f, -1.0f, -1.0f,
-             1.0f, -1.0f, -1.0f,
-            -1.0f, -1.0f,  1.0f,
-             1.0f, -1.0f,  1.0f
+            -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f,  1.0f,  -1.0f, -1.0f,
+            1.0f,  -1.0f, -1.0f, -1.0f, -1.0f, 1.0f,  1.0f,  -1.0f, 1.0f
         };
 
         glGenVertexArrays(1, &VAO);
         glGenBuffers(1, &VBO);
         glBindVertexArray(VAO);
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(cubeMapVertices), &cubeMapVertices, GL_STATIC_DRAW);
+        glBufferData(
+            GL_ARRAY_BUFFER, sizeof(cubeMapVertices), &cubeMapVertices,
+            GL_STATIC_DRAW);
         glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
+        glVertexAttribPointer(
+            0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
 
         shader.uniform("skybox", 0);
     }
@@ -113,11 +88,11 @@ public:
         glDepthFunc(GL_LESS);
     }
 
-private:
+  private:
     GLuint VAO;
     GLuint VBO;
     AbstractTexture m_texture;
     Shader &m_shader;
 };
 
-#endif //CUBEMAP_H
+#endif // CUBEMAP_H
