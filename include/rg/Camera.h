@@ -8,12 +8,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-enum Direction {
-    FORWARD,
-    BACKWARD,
-    LEFT,
-    RIGHT
-};
+enum Direction { FORWARD, BACKWARD, LEFT, RIGHT };
 
 class Camera {
     void updateCameraVectors() {
@@ -25,7 +20,8 @@ class Camera {
         Right = glm::normalize(glm::cross(Front, WorldUp));
         Up = glm::normalize(glm::cross(Right, Front));
     }
-public:
+
+  public:
     float Zoom = 45.f;
     float MovementSpeed = 2.5f;
     float Yaw = -90.0f;
@@ -38,9 +34,7 @@ public:
     glm::vec3 Right;
     glm::vec3 Front = glm::vec3(0, 0, -1);
 
-    Camera() {
-        updateCameraVectors();
-    }
+    Camera() { updateCameraVectors(); }
 
     glm::mat4 GetViewMatrix() const {
         return glm::lookAt(Position, Position + Front, Up);
@@ -48,23 +42,24 @@ public:
 
     void ProcessKeyboard(Direction direction, float deltaTime) {
         float velocity = MovementSpeed * deltaTime;
-       switch (direction) {
-           case FORWARD: {
-              Position += Front * velocity;
-           }break;
-           case BACKWARD: {
+        switch (direction) {
+            case FORWARD: {
+                Position += Front * velocity;
+            } break;
+            case BACKWARD: {
                 Position -= Front * velocity;
-           }break;
-           case LEFT: {
+            } break;
+            case LEFT: {
                 Position -= Right * velocity;
-           }break;
-           case RIGHT: {
+            } break;
+            case RIGHT: {
                 Position += Right * velocity;
-           }break;
-       }
+            } break;
+        }
     }
 
-    void ProcessMouseMovement(float xoffset, float yoffset, bool constrainPitch = true) {
+    void ProcessMouseMovement(
+        float xoffset, float yoffset, bool constrainPitch = true) {
         xoffset *= MouseSensitivity;
         yoffset *= MouseSensitivity;
 
@@ -93,4 +88,4 @@ public:
     }
 };
 
-#endif //PROJECT_BASE_CAMERA_H
+#endif // PROJECT_BASE_CAMERA_H

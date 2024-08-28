@@ -1,0 +1,15 @@
+---
+Language:                             Cpp
+BasedOnStyle:                         LLVM
+AlignAfterOpenBracket:                AlwaysBreak
+AllowShortIfStatementsOnASingleLine:  WithoutElse
+AlwaysBreakTemplateDeclarations:      Yes
+BreakConstructorInitializers:         BeforeComma
+BreakInheritanceList:                 BeforeComma
+Cpp11BracedListStyle:                 false
+IndentCaseLabels:                     true
+IndentWidth:                          4
+KeepEmptyLinesAtTheStartOfBlocks:     true
+SpaceAfterCStyleCast:                 true
+SpaceBeforeCpp11BracedList:           true
+...

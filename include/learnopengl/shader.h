@@ -4,21 +4,19 @@
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 
-#include <string>
-#include <fstream>
-#include <sstream>
-#include <iostream>
-#include <unordered_map>
 #include <common.h>
-class Shader
-{
-public:
+#include <fstream>
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <unordered_map>
+class Shader {
+  public:
     // TODO: move to private section, has dependency in Mesh
     unsigned int ID;
     // constructor generates the shader on the fly
     // ------------------------------------------------------------------------
-    Shader(const char* vertexPath, const char* fragmentPath)
-    {
+    Shader(const char *vertexPath, const char *fragmentPath) {
         auto vertex = loadShader(vertexPath, GL_VERTEX_SHADER);
         auto fragment = loadShader(fragmentPath, GL_FRAGMENT_SHADER);
 
@@ -33,82 +31,66 @@ public:
     }
     // activate the shader
     // ------------------------------------------------------------------------
-    void use() const
-    { 
-        glUseProgram(ID);
-    }
+    void use() const { glUseProgram(ID); }
     // utility uniform functions
     // ------------------------------------------------------------------------
-    void uniform(const std::string &name, bool value)
-    {
+    void uniform(const std::string &name, bool value) {
         use();
-        glUniform1i(location(name), (int)value);
+        glUniform1i(location(name), (int) value);
     }
     // ------------------------------------------------------------------------
-    void uniform(const std::string &name, int value)
-    {
+    void uniform(const std::string &name, int value) {
         use();
         glUniform1i(location(name), value);
     }
     // ------------------------------------------------------------------------
-    void uniform(const std::string &name, float value)
-    {
+    void uniform(const std::string &name, float value) {
         use();
         glUniform1f(location(name), value);
     }
     // ------------------------------------------------------------------------
-    void uniform(const std::string &name, const glm::vec2 &value)
-    {
+    void uniform(const std::string &name, const glm::vec2 &value) {
         use();
         glUniform2fv(location(name), 1, &value[0]);
     }
-    void uniform(const std::string &name, float x, float y)
-    {
+    void uniform(const std::string &name, float x, float y) {
         use();
         glUniform2f(location(name), x, y);
     }
     // ------------------------------------------------------------------------
-    void uniform(const std::string &name, const glm::vec3 &value)
-    { 
+    void uniform(const std::string &name, const glm::vec3 &value) {
         glUniform3fv(location(name), 1, &value[0]);
     }
-    void uniform(const std::string &name, float x, float y, float z)
-    {
+    void uniform(const std::string &name, float x, float y, float z) {
         use();
         glUniform3f(location(name), x, y, z);
     }
     // ------------------------------------------------------------------------
-    void uniform(const std::string &name, const glm::vec4 &value)
-    {
+    void uniform(const std::string &name, const glm::vec4 &value) {
         use();
         glUniform4fv(location(name), 1, &value[0]);
     }
-    void uniform(const std::string &name, float x, float y, float z, float w)
-    {
+    void uniform(const std::string &name, float x, float y, float z, float w) {
         use();
         glUniform4f(location(name), x, y, z, w);
     }
     // ------------------------------------------------------------------------
-    void uniform(const std::string &name, const glm::mat2 &mat)
-    {
+    void uniform(const std::string &name, const glm::mat2 &mat) {
         use();
         glUniformMatrix2fv(location(name), 1, GL_FALSE, &mat[0][0]);
     }
     // ------------------------------------------------------------------------
-    void uniform(const std::string &name, const glm::mat3 &mat)
-    {
+    void uniform(const std::string &name, const glm::mat3 &mat) {
         use();
         glUniformMatrix3fv(location(name), 1, GL_FALSE, &mat[0][0]);
     }
     // ------------------------------------------------------------------------
-    void uniform(const std::string &name, const glm::mat4 &mat)
-    {
+    void uniform(const std::string &name, const glm::mat4 &mat) {
         use();
         glUniformMatrix4fv(location(name), 1, GL_FALSE, &mat[0][0]);
     }
 
-private:
-
+  private:
     GLint location(const std::string &name) {
         const auto iloc = m_location.find(name);
         if (iloc == m_location.end()) {
@@ -128,8 +110,9 @@ private:
             std::stringstream stream;
             stream << file.rdbuf();
             code = stream.str();
-        } catch (std::ifstream::failure&) {
-            std::cerr << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
+        } catch (std::ifstream::failure &) {
+            std::cerr << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ"
+                      << std::endl;
             return 0;
         }
 
@@ -149,12 +132,16 @@ private:
         GLint success;
         GLchar infoLog[1024];
         glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-        if(!success)
-        {
+        if (!success) {
             glGetShaderInfoLog(shader, 1024, nullptr, infoLog);
-            std::cout << "ERROR::SHADER_COMPILATION_ERROR::"
-                << (type == GL_VERTEX_SHADER ? "VERTEX_SHADER" : "FRAGMENT_SHADER") << "\n"
-                << infoLog << "\n -- --------------------------------------------------- -- "
+            std::cout
+                << "ERROR::SHADER_COMPILATION_ERROR::"
+                << (type == GL_VERTEX_SHADER ? "VERTEX_SHADER"
+                                             : "FRAGMENT_SHADER")
+                << "\n"
+                << infoLog
+                << "\n -- --------------------------------------------------- "
+                   "-- "
                 << std::endl;
         }
     }
@@ -165,11 +152,13 @@ private:
         GLint success;
         GLchar infoLog[1024];
         glGetProgramiv(program, GL_LINK_STATUS, &success);
-        if(!success)
-        {
+        if (!success) {
             glGetShaderInfoLog(program, 1024, nullptr, infoLog);
-            std::cout << "ERROR::PROGRAM_LINKING_ERROR\n"
-                << infoLog << "\n -- --------------------------------------------------- -- "
+            std::cout
+                << "ERROR::PROGRAM_LINKING_ERROR\n"
+                << infoLog
+                << "\n -- --------------------------------------------------- "
+                   "-- "
                 << std::endl;
         }
     }

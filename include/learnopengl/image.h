@@ -7,13 +7,13 @@
 #include <iostream>
 
 class Image {
-public:
+  public:
     int width;
     int height;
     int channels;
     GLint internalFormat;
     GLint dataFormat;
-    stbi_uc *data {nullptr};
+    stbi_uc *data { nullptr };
 
     explicit Image(const char *path) {
         data = stbi_load(path, &width, &height, &channels, 0);
@@ -26,20 +26,22 @@ public:
                 case 3:
                     internalFormat = GL_SRGB;
                     dataFormat = GL_RGB;
-                break;
+                    break;
                 case 4:
                     internalFormat = GL_SRGB_ALPHA;
                     dataFormat = GL_RGBA;
-                break;
+                    break;
                 default:
-                    std::cerr << "Image::" << path << "::Unknwon number of channels: " << channels << std::endl;
-                return;
+                    std::cerr << "Image::" << path
+                              << "::Unknwon number of channels: " << channels
+                              << std::endl;
+                    return;
             }
         }
     }
 
-    Image(const Image&) = delete;
-    Image& operator=(const Image&) = delete;
+    Image(const Image &) = delete;
+    Image &operator=(const Image &) = delete;
 
     ~Image() {
         if (data) {
@@ -48,4 +50,4 @@ public:
     }
 };
 
-#endif //IMAGE_H
+#endif // IMAGE_H
