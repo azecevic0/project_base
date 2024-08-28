@@ -2,8 +2,9 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 
-#include <GLFW/glfw3.h>
 #include <glad/glad.h>
+
+#include <GLFW/glfw3.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -407,7 +408,6 @@ int main() {
         programState->hdr.bind();
         // 2. lighting pass: calculate lighting by iterating over a screen
         // filled quad pixel-by-pixel using the gbuffer's content.
-        // -----------------------------------------------------------------------------------------------------------------------
         programState->deferredShading->bindTextures();
         // send light relevant uniforms
         lightingPassShader.uniform("pointLight.position", pointLight.position);
@@ -439,7 +439,6 @@ int main() {
         programState->deferredShading->render(programState->hdr.buffer());
 
         // 3. render lights on top of scene
-        // --------------------------------
         lightSourceShader.use();
         lightSourceShader.uniform("projection", projection);
         lightSourceShader.uniform("view", view);
@@ -470,7 +469,6 @@ int main() {
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse
         // moved etc.)
-        // -------------------------------------------------------------------------------
         glfwSwapBuffers(window);
         glfwPollEvents();
         frames++;
@@ -486,46 +484,12 @@ int main() {
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
     // glfw: terminate, clearing all previously allocated GLFW resources.
-    // ------------------------------------------------------------------
     glfwTerminate();
     return 0;
 }
 
-// renderQuad() renders a 1x1 XY quad in NDC
-// -----------------------------------------
-unsigned int quadVAO = 0;
-unsigned int quadVBO;
-void renderQuad() {
-    if (quadVAO == 0) {
-        float quadVertices[] = {
-            // positions        // texture Coords
-            -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
-            1.0f,  1.0f, 0.0f, 1.0f, 1.0f, 1.0f,  -1.0f, 0.0f, 1.0f, 0.0f,
-        };
-        // setup plane VAO
-        glGenVertexArrays(1, &quadVAO);
-        glGenBuffers(1, &quadVBO);
-        glBindVertexArray(quadVAO);
-        glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
-        glBufferData(
-            GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices,
-            GL_STATIC_DRAW);
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(
-            0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *) nullptr);
-        glEnableVertexAttribArray(1);
-        glVertexAttribPointer(
-            1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float),
-            (void *) (3 * sizeof(float)));
-    }
-    glBindVertexArray(quadVAO);
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-    glBindVertexArray(0);
-}
-
 // process all input: query GLFW whether relevant keys are pressed/released this
 // frame and react accordingly
-// ---------------------------------------------------------------------------------------------------------
 void processInput(GLFWwindow *window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
@@ -542,7 +506,6 @@ void processInput(GLFWwindow *window) {
 
 // glfw: whenever the window size changed (by OS or user resize) this callback
 // function executes
-// ---------------------------------------------------------------------------------------------
 void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
     // make sure the viewport matches the new window dimensions; note that width
     // and height will be significantly larger than specified on retina
@@ -555,7 +518,6 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
 }
 
 // glfw: whenever the mouse moves, this callback is called
-// -------------------------------------------------------
 void mouse_callback(GLFWwindow *window, double xpos, double ypos) {
     if (firstMouse) {
         lastX = xpos;
@@ -575,7 +537,6 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos) {
 }
 
 // glfw: whenever the mouse scroll wheel scrolls, this callback is called
-// ----------------------------------------------------------------------
 void scroll_callback(GLFWwindow *window, double xoffset, double yoffset) {
     programState->camera.ProcessMouseScroll(yoffset);
 }

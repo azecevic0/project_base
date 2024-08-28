@@ -21,7 +21,6 @@ class DeferredShading {
         m_lightingPass.uniform("gAlbedoSpec", 2);
 
         float quadVertices[] = {
-            // positions        // texture Coords
             -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
             1.0f,  1.0f, 0.0f, 1.0f, 1.0f, 1.0f,  -1.0f, 0.0f, 1.0f, 0.0f,
         };
@@ -111,19 +110,9 @@ class DeferredShading {
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
         glBindVertexArray(0);
 
-        // 2.5. copy content of geometry's depth buffer to default framebuffer's
-        // depth buffer
-        // ----------------------------------------------------------------------------------
         glBindFramebuffer(GL_READ_FRAMEBUFFER, m_gBuffer);
         glBindFramebuffer(
             GL_DRAW_FRAMEBUFFER, fbo); // write to default framebuffer
-        // blit to default framebuffer. Note that this may or may not work as
-        // the internal formats of both the FBO and default framebuffer have to
-        // match. the internal formats are implementation defined. This works on
-        // all of my systems, but if it doesn't on yours you'll likely have to
-        // write to the depth buffer in another shader stage (or somehow see to
-        // match the default framebuffer's internal format with the FBO's
-        // internal format).
         glBlitFramebuffer(
             0, 0, m_width, m_height, 0, 0, m_width, m_height,
             GL_DEPTH_BUFFER_BIT, GL_NEAREST);
