@@ -40,27 +40,24 @@ set(LIBS glfw glad OpenGL::GL X11 Xrandr Xinerama Xi Xxf86vm Xcursor dl pthread 
 configure_file(configuration/root_directory.h.in configuration/root_directory.h)
 include_directories(${CMAKE_BINARY_DIR}/configuration)
 
+find_program(CLANG_TIDY_EXE NAMES clang-tidy)
+if(CLANG_TIDY_EXE)
+    message(STATUS "Found clang-tidy: ${CLANG_TIDY_EXE}")
+    set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_EXE};-fix;-extra-arg=--std=c++14")
+endif()
 
 include_directories(include/)
 add_executable(${PROJECT_NAME}
         ${SOURCES}
-        include/learnopengl/image.h
-        include/learnopengl/texture2d.h
-        include/learnopengl/texture.h
-        include/learnopengl/cubemap.h
-        include/learnopengl/vampire.h
-        include/learnopengl/DeferredShading.h
-        include/learnopengl/magic_light.h
-        include/learnopengl/hdr.h)
+        ${HEADERS})
 
 target_link_libraries(${PROJECT_NAME} ${LIBS})
 
 # set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/${PROJECT_NAME}")
 set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}")
-file(GLOB SHADERS "shaders/*.vs"
-        "shaders/*.fs")
+file(GLOB SHADERS "resources/shaders/*.vert"
+        "resources/shaders/*.frag")
 foreach(SHADER ${SHADERS})
     # file(COPY ${SHADER} DESTINATION ${CMAKE_SOURCE_DIR}/bin/${PROJECT_NAME}/shaders)
     watch(${SHADER})
 endforeach()
-

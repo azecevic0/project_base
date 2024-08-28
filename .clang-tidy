@@ -1,0 +1,12 @@
+Checks:
+  - '-*'
+  - 'modernize-*'
+  - '-modernize-avoid-c-arrays'
+  - '-modernize-use-trailing-return-type'
+  - 'performance-noexcept-*'
+  - 'readability-avoid-return-with-void-value'
+  - 'readability-non-const-parameter'
+  - 'readability-redundant-*'
+  - '-readability-redundant-preprocessor'
+  - 'readability-use-std-min-max'
+HeaderFilterRegex: 'include/learnopengl/*'
