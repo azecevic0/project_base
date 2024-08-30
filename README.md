@@ -1,11 +1,36 @@
-# project_base
-Prazan projekat sa pratećim bibliotekama koje koristimo na času. 
+# Savan's Moonwalk
 
-# Uputstvo
-1. `git clone https://github.com/matf-racunarska-grafika/project_base.git`
-2. CLion -> Open -> path/to/my/project_base
-3. Main se nalazi u src/main.cpp
-4. Cpp fajlovi idu u src folder
-5. Zaglavlja (h i hpp) fajlovi idu u include
-6. Šejderi idu u folder shaders. `Vertex shader` ima ekstenziju `.vs`, `fragment shader` ima ekstenziju `.fs`
-7. ALT+SHIFT+F10 -> project_base -> run
+You are in a haunted forest. You have to defend a barn that's being attacked by a vampire. What's better defense against vampires than garlic?
+
+Lecture A:  Cubemaps
+
+Lecture B: Deferred Shading
+
+Lecture B: HDR + Bloom
+
+*Youtube Demo*:
+
+[![YouTube Demo](https://img.youtube.com/vi/wlNTvOyBPus/maxresdefault.jpg)](https://www.youtube.com/watch?v=wlNTvOyBPus)
+
+## Build Instructions
+
+```
+https://github.com/azecevic0/project_base.git
+cd project_base
+mkdir build && cd build
+cmake .. -G 'Unix Makefiles'
+make
+cd ..
+./project_base
+```
+
+## Controls
+`W` `A` `S` `D`: Movement
+
+`Left click`: Shoot a garlic
+
+`F`: Toggle flashilight on/off (default off)
+
+`B`: Toggle bloom on/off (default on)
+
+`F1`: Toogle ImGui controls on/off (default on)
