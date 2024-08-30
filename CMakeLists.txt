@@ -51,7 +51,9 @@ add_executable(${PROJECT_NAME}
         ${SOURCES}
         ${HEADERS})
 
-if(CMAKE_COMPILER_IS_GNUCXX)
+find_program(LCOV lcov)
+if(LCOV AND CMAKE_COMPILER_IS_GNUCXX)
+    message(STATUS "Found lcov: ${LCOV}")
     include(CodeCoverage)
     SETUP_TARGET_FOR_COVERAGE_LCOV(NAME coverage EXECUTABLE ${PROJECT_NAME})
 endif()
