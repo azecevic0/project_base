@@ -234,8 +234,8 @@ int main() {
     // position of lantern
     pointLight.position = glm::vec3(4.0f, 6.65f, -33.0f);
     pointLight.ambient = glm::vec3(0.05, 0.05, 0.05);
-    pointLight.diffuse = glm::vec3(2.0, 2.0, 2.0);
-    pointLight.specular = glm::vec3(2.0, 2.0, 2.0);
+    pointLight.diffuse = 2.5f * glm::vec3(1.0, 0.8745, 0.3);
+    pointLight.specular = 2.5f * glm::vec3(1.0, 0.8745, 0.3);
 
     pointLight.constant = 1.0f;
     pointLight.linear = 0.18f;
