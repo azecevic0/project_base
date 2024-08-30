@@ -13,7 +13,7 @@ endfunction()
 set(CMAKE_POLICY_DEFAULT_CMP0012 NEW)
 set(CMAKE_CXX_STANDARD 14)
 
-list(APPEND CMAKE_CXX_FLAGS "-Wall -Wextra --coverage -Wno-unused-variable -Wno-unused-parameter -O3")
+list(APPEND CMAKE_CXX_FLAGS "-Wall -Wextra -Wno-unused-variable -Wno-unused-parameter -O3")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
 
 file(GLOB SOURCES "src/*.cpp" "src/*.c" src/main.cpp)
@@ -54,6 +54,7 @@ add_executable(${PROJECT_NAME}
 find_program(LCOV lcov)
 if(LCOV AND CMAKE_COMPILER_IS_GNUCXX)
     message(STATUS "Found lcov: ${LCOV}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage")
     include(CodeCoverage)
     SETUP_TARGET_FOR_COVERAGE_LCOV(NAME coverage EXECUTABLE ${PROJECT_NAME})
 endif()
